@@ -80,49 +80,65 @@ program  :  precomList declList {syntaxTree = $2;}
 precomList : precomList PRECOMPILER {$$ = $1;}
 	| PRECOMPILER {printf("%s\n", yylval.tokenData->tokenstr);}
 	| /*empty*/ {$$ = NULL;}
+	;
 
-declList : declList decl {}
+declList : declList decl {$$ = addSibling($1, $2);}
 	| decl {}
+	;
 
 decl : varDecl {}
 	| funDecl {}
+	;
 
 varDecl : typeSpec varDeclList ';' {}
+;
 
 scopedVarDecl : STATIC typeSpec varDeclList ';' {}
 	| typeSpec varDeclList ';' {}
+	;
 
 varDeclList : varDeclList ',' varDeclInit {}
 	| varDeclInit {}
+	;
 
 varDeclInit : varDeclId {}
+;
 
 varDeclId : ID {}
 	| ID '[' NUMCONST '[' {}
+	;
 
 typeSpec : INT {}
 	| BOOL {}
 	| CHAR {}
+	;
 
 funDecl : typeSpec ID '(' parms ')' stmt {}
 	| ID '(' parms ')' stmt {}
+	;
 
 parms : parmList {}
 	| /*empty*/ {}
+	;
 
 parmList : parmList ';' parmTypeList {}
 	| parmTypeList {}
+	;
 
 parmTypeList : typeSpec parmIdList {}
+	;
 
 parmIdList : parmIdList ',' parmId {}
 	| parmId {}
+	;
 
 parmId : ID {}
 	| ID '[' ']' {}
+	;
 
 stmt : matched {}
 	| unmatched {}
+	;
 
 matched : IF simpleExp THEN matched ELSE matched {}
 	| WHILE simpleExp DO matched {}
@@ -131,53 +147,68 @@ matched : IF simpleExp THEN matched ELSE matched {}
 	| compoundstmt {}
 	| returnstmt {}
 	| breakstmt {}
+	;
 
 iterRange : simpleExp TO simpleExp {}
 	| simpleExp TO simpleExp BY simpleExp {}
+	;
 
 unmatched : IF simpleExp THEN stmt {}
 	| IF simpleExp THEN matched ELSE unmatched {}
 	| WHILE simpleExp DO unmatched {}
 	| FOR ID '=' iterRange DO unmatched {}
+	;
 
 expstmt : exp ';' {}
+	;
 
 compoundstmt : '{' localDecls stmtList '}' {}
+	;
 
 localDecls : localDecls scopedVarDecl {}
 	| /* empty */ {}
+	;
 
 stmtList : stmtList stmt // empty stmt test {}
 	| /* empty */ {}
+	;
 
 returnstmt : RETURN ';' {}
 	| RETURN exp ';' {}
+	;
 
 breakstmt : BREAK ';' {}
+	;
 
 exp : mutablel assignop exp {}
 	| mutablel INC {}
 	| mutablel DEC {}
 	| simpleExp {}
 	| mutablel assignop error {}
+	;
 
 assignop : '=' {}
 	| ADDASS {}
 	| SUBASS {}
 	| MULASS {}
 	| DIVASS {}
+	;
 
 simpleExp : simpleExp OR andExp {}
 	| andExp {}
+	;
 
 andExp : andExp AND unaryRelExp {}
 	| unaryRelExp {}
+	;
 
 unaryRelExp : NOT unaryRelExp {}
 	| relExp {}
+	;
 
 relExp : minmaxExp relop minmaxExp {}
-| minmaxExp {}
+	| minmaxExp {}
+	;
 
 relop : LEQ {}
 	| '>' {}
@@ -185,44 +216,71 @@ relop : LEQ {}
 	| GEQ {}
 	| EQ {}
 	| NEQ {}
+	;
 
 minmaxExp : minmaxExp minmaxop sumExp {}
 	| sumExp {}
+	;
 
 minmaxop : MAX {}
 	| MIN {}
+	;
 
 sumExp : sumExp sumop mulExp {}
 	| mulExp {}
+	;
 
 sumop : '+' {}
 	| '-' {}
+	;
+
 mulExp : mulExp mulop unaryExp {}
 	| unaryExp {}
+	;
+
 mulop : '*' {}
 	| '/' {}
 	| '%' {}
+	;
+
 unaryExp : unaryop unaryExp {}
 	| factor {}
+	;
+
 unaryop : '-' {}
 	| '*' {}
 	| '?' {}
+	;
+
 factor : immutable {}
 	| mutablel {}
+	;
+
 mutablel : ID {}
 	| ID '[' exp ']' {}
+	;
+
 immutable : '(' exp ')' {}
 	| call {}
 	| constant {}
+	;
+
 call : ID '(' args ')' {}
+	;
+
 args : argList {}
 	| /* empty */ {}
+	;
+
 argList : argList ',' exp {}
 	| exp {}
+	;
+
 constant : NUMCONST {}
 	| CHARCONST {}
 	| STRINGCONST {}
 	| BOOLCONST {}
+	;
 
 
 term  :
