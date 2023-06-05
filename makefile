@@ -2,7 +2,7 @@ BIN  = bC  # name of thing to be built goes here
 PARSE = parser
 CC   = g++
 # CFLAGS = -g
-CPPFLAGS = -O3 -g -I./ # for use with C++ if file ext is .c
+CPPFLAGS = -O0 -g -I./ # for use with C++ if file ext is .c
 
 SRCS = $(PARSE).y $(PARSE).l treeUtils.cpp
 OBJS = lex.yy.o $(PARSE).tab.o treeUtils.o

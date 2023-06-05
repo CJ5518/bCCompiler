@@ -60,7 +60,7 @@ TreeNode* syntaxTree;
 
 %}
 %union {
-	TokenData *tokenData;
+	TokenData* tokenData;
 	TreeNode *tree;
 	ExpType type; // for passing type spec up the tree
 }
@@ -235,7 +235,9 @@ void yyerror (const char *msg)
 }
 
 int main(int argc, char **argv) {
-	//yylval.tinfo.linenum = 1;
+	yylval.tokenData = (TokenData*)malloc(sizeof(TokenData));
+	yylval.tree = (TreeNode*)malloc(sizeof(TreeNode));
+	yylval.tokenData->linenum = 1;
 	int index;
 	char *file = NULL;
 	bool dotAST = false;             // make dot file of AST

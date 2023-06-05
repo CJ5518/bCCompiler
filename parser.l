@@ -17,6 +17,7 @@ underbar [_]
 letdig      {digit}|{letter}|{underbar}
 op    [\-\+\*\/\%\=\;\(\)\{\}\>\<\[\]\,\:\?]
 whitespace  [\ \t]
+
 %%
 ^#.+ { yylval.tokenData->tokenstr = yytext; return PRECOMPILER ; }
 "int"      { yylval.tokenData->tokenstr = yytext; return INT ; }
