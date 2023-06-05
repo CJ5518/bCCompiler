@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
+#include "treeNodes.h"
 #include "treeUtils.h"
 #include "scanType.h"
 using namespace std;
@@ -67,7 +68,7 @@ TreeNode* syntaxTree;
 %token <tokenData> BOOLCONST STATIC OR BOOL BREAK BY CHAR AND CHARCONST COMMENT NOT WHILE
 %token <tokenData> EQ GEQ LEQ DEC DIVASS SUBASS ADDASS INC MULASS NEQ MAX MIN STRINGCONST
 %type <tokenData> term
-%type <tree> program
+%type <tree> program precomList declList decl varDecl scopedVarDecl
 %%
 program  :  program term
 	|  term  {$$=$1;}

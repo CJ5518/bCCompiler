@@ -4,7 +4,7 @@
 #include "scanType.h"
 #include <string.h>
 
-// lots of these save the TokenData block so line number and yytext are saved
+//Clones a node, does a deep copy and clones all children and siblings
 TreeNode *cloneNode(TreeNode *currnode);
 TreeNode *newDeclNode(DeclKind kind,
 					  ExpType type,
