@@ -6,6 +6,21 @@
 
 #define YY_DECL extern "C" int yylex()
 
+char *lastToken = (char*)"";
+int lineNum = 1;
+
+int setValue(int linenum, int tokenClass, char *svalue) {
+	yylval.tokenData = new TokenData;
+	yylval.tokenData->tokenclass = tokenClass;
+	yylval.tokenData->linenum = linenum;
+	yylval.tokenData->tokenstr = lastToken = strdup(svalue);
+	yylval.tokenData->cvalue = svalue[0];
+	//May cause overflow error
+	yylval.tokenData->nvalue = atoi(svalue);
+	yylval.tokenData->svalue = strdup(svalue);
+	return tokenClass;
+}
+
 %}
 
 
@@ -19,49 +34,49 @@ op    [\-\+\*\/\%\=\;\(\)\{\}\>\<\[\]\,\:\?]
 whitespace  [\ \t]
 
 %%
-^#.+ { yylval.tokenData->tokenstr = yytext; return PRECOMPILER ; }
-"int"      { yylval.tokenData->tokenstr = yytext; return INT ; }
-"return"      { yylval.tokenData->tokenstr = yytext; return RETURN ; }
-"if" { yylval.tokenData->tokenstr = yytext; return IF ; }
-"then" { yylval.tokenData->tokenstr = yytext; return THEN ; }
-"for" { yylval.tokenData->tokenstr = yytext; return FOR ; }
-"to" { yylval.tokenData->tokenstr = yytext; return TO ; }
-"do" { yylval.tokenData->tokenstr = yytext; return DO ; }
-"while" { yylval.tokenData->tokenstr = yytext; return WHILE ; }
-"and" { yylval.tokenData->tokenstr = yytext; return AND ; }
-"not" { yylval.tokenData->tokenstr = yytext; return NOT ; }
-"or" { yylval.tokenData->tokenstr = yytext; return OR ; }
-"bool" { yylval.tokenData->tokenstr = yytext; return BOOL ; }
-"break" { yylval.tokenData->tokenstr = yytext; return BREAK ; }
-"by" { yylval.tokenData->tokenstr = yytext; return BY ; }
-"char" { yylval.tokenData->tokenstr = yytext; return CHAR ; }
-"else" { yylval.tokenData->tokenstr = yytext; return ELSE ; }
-"=="      { yylval.tokenData->tokenstr = yytext; return EQ ; }
-">="      { yylval.tokenData->tokenstr = yytext; return GEQ ; }
-"<="      { yylval.tokenData->tokenstr = yytext; return LEQ ; }
-"--"      { yylval.tokenData->tokenstr = yytext; return DEC ; }
-"/="      { yylval.tokenData->tokenstr = yytext; return DIVASS ; }
-"-="      { yylval.tokenData->tokenstr = yytext; return SUBASS ; }
-"+="      { yylval.tokenData->tokenstr = yytext; return ADDASS ; }
-"++"      { yylval.tokenData->tokenstr = yytext; return INC ; }
-"*="      { yylval.tokenData->tokenstr = yytext; return MULASS ; }
-"!="      { yylval.tokenData->tokenstr = yytext; return NEQ ; }
-":>:"      { yylval.tokenData->tokenstr = yytext; return MAX ; }
-":<:"      { yylval.tokenData->tokenstr = yytext; return MIN ; }
-true|false { yylval.tokenData->tokenstr = yytext; return BOOLCONST ; }
-"static" { yylval.tokenData->tokenstr = yytext; return STATIC ; }
+^#.+  { return setValue(lineNum, PRECOMPILER, yytext);}
+"int"      { return setValue(lineNum, INT, yytext); }
+"return"      { return setValue(lineNum, RETURN, yytext); }
+"if" { return setValue(lineNum, IF, yytext); }
+"then" { return setValue(lineNum, THEN, yytext); }
+"for" { return setValue(lineNum, FOR, yytext); }
+"to" { return setValue(lineNum, TO, yytext); }
+"do" { return setValue(lineNum, DO, yytext); }
+"while" { return setValue(lineNum, WHILE, yytext); }
+"and" { return setValue(lineNum, AND, yytext); }
+"not" { return setValue(lineNum, NOT, yytext); }
+"or" { return setValue(lineNum, OR, yytext); }
+"bool" { return setValue(lineNum, BOOL, yytext); }
+"break" { return setValue(lineNum, BREAK, yytext); }
+"by" { return setValue(lineNum, BY, yytext); }
+"char" { return setValue(lineNum, CHAR, yytext); }
+"else" { return setValue(lineNum, ELSE, yytext); }
+"=="      { return setValue(lineNum, EQ, yytext); }
+">="      { return setValue(lineNum, GEQ, yytext); }
+"<="      { return setValue(lineNum, LEQ, yytext); }
+"--"      { return setValue(lineNum, DEC, yytext); }
+"/="      { return setValue(lineNum, DIVASS, yytext); }
+"-="      { return setValue(lineNum, SUBASS, yytext); }
+"+="      { return setValue(lineNum, ADDASS, yytext); }
+"++"      { return setValue(lineNum, INC, yytext); }
+"*="      { return setValue(lineNum, MULASS, yytext); }
+"!="      { return setValue(lineNum, NEQ, yytext); }
+":>:"      { return setValue(lineNum, MAX, yytext); }
+":<:"      { return setValue(lineNum, MIN, yytext); }
+true|false { return setValue(lineNum, BOOLCONST, yytext); }
+"static" { return setValue(lineNum, STATIC, yytext); }
 
-\/\/.* { yylval.tokenData->tokenstr = yytext; return COMMENT ; }
+\/\/.* { return setValue(lineNum, COMMENT, yytext); }
 
 
-\"((\\\")|([^\n\"]))*\"  { yylval.tokenData->tokenstr = yytext; return STRINGCONST ; }
-\'..?\' { yylval.tokenData->tokenstr = yytext; return CHARCONST ; }
+\"((\\\")|([^\n\"]))*\"  { return setValue(lineNum, STRINGCONST, yytext); }
+\'..?\' { return setValue(lineNum, CHARCONST, yytext); }
 
-{op} { yylval.tokenData->tokenstr = yytext; return OP ; }
-{digit}+     { yylval.tokenData->tokenstr = yytext; return NUMCONST ; }
-{letdig}+     { yylval.tokenData->tokenstr = yytext; return ID ; }
+{op} { return setValue(lineNum, yytext[0], yytext); }
+{digit}+     { return setValue(lineNum, NUMCONST, yytext); }
+{letdig}+     { return setValue(lineNum, ID, yytext); }
 
-\n    { yylval.tokenData->linenum++ ; }
+\n    { lineNum++ ; }
 {whitespace}+  ;
-.     { yylval.tokenData->tokenstr = yytext; return ERROR; }
+.     { return setValue(lineNum, ERROR, yytext); }
 

@@ -22,8 +22,8 @@ TreeNode *newExpNode(ExpKind kind,
 					 TreeNode *c0=NULL,
 					 TreeNode *c1=NULL,
 					 TreeNode *c2=NULL);
-char *tokenToStr(int type);
-char *expTypeToStr(ExpType type, bool isArray=false, bool isStatic=false);
+const char *tokenToStr(int type);
+const char *expTypeToStr(ExpType type, bool isArray=false, bool isStatic=false);
 
 void printTreeNode(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAllocation);
 void printTree(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAllocation);

@@ -72,17 +72,71 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0L, TreeNode *c1
 	newNode->kind.exp = kind;
 	return newNode;
 }
-char *tokenToStr(int type) {
+const char *tokenToStr(int type) {
 	return "NotImplemented";
 }
-char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {
+const char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {
 	return "NotImplemented";
 }
 
 //Use fprintf
-void printTreeNode(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAllocation) {
-
+void printTreeNode(FILE *out, TreeNode *node, bool showExpType, bool showAllocation) {
+	fprintf(out, "Node number: %d\n", node->nodeNum);
+	fprintf(out, "Line number: %d\n", node->lineno);
+	fprintf(out, "nodekind: %d", node->nodekind);
+	switch (node->nodekind) {
+		case NodeKind::DeclK:
+			fprintf(out, "%d\n", node->kind.decl);
+		break;
+		case NodeKind::ExpK:
+			fprintf(out, "%d\n", node->kind.exp);
+		break;
+		case NodeKind::StmtK:
+			fprintf(out, "%d\n", node->kind.stmt);
+		break;
+		default:
+			fprintf(out, "Bad NodeKind in node\n");
+	}
 }
-void printTree(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAllocation) {
 
+void printDepth(FILE* file, int depth) {
+	for (int q = 0; q < depth; q++) {
+		fprintf(file, "* ");
+	}
+}
+
+void printTree(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAllocation) {
+	fprintf(out, "Printing Tree:\n");
+
+	if (syntaxTree == NULL) {
+		fprintf(out, "NULL\n");
+		return;
+	}
+
+	int depth = 1;
+	printTreeNode(out, syntaxTree, showExpType, showAllocation);
+	while (syntaxTree) {
+
+		printDepth(out, depth);
+		fprintf(out, "Siblings:\n");
+		TreeNode* next = syntaxTree->sibling;
+		while (next) {
+			printDepth(out, depth);
+			printTreeNode(out, next, showExpType, showAllocation);
+			next = next->sibling;
+		}
+
+		printDepth(out, depth);
+		fprintf(out, "Children:\n");
+		for (int q = 0; q < MAXCHILDREN; q++) {
+			if (syntaxTree->child[q]) {
+				printDepth(out, depth);
+				fprintf(out, "Child %d:", q);
+				printDepth(out, depth);
+				printTreeNode(out, syntaxTree->child[q], showExpType, showAllocation);
+			}
+		}
+		break;
+		depth++;
+	}
 }

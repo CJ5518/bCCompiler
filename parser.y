@@ -67,11 +67,13 @@ TreeNode* syntaxTree;
 %token <tokenData> OP INT ID NUMCONST IF ELSE THEN TO DO FOR RETURN ERROR PRECOMPILER
 %token <tokenData> BOOLCONST STATIC OR BOOL BREAK BY CHAR AND CHARCONST COMMENT NOT WHILE
 %token <tokenData> EQ GEQ LEQ DEC DIVASS SUBASS ADDASS INC MULASS NEQ MAX MIN STRINGCONST
+%token <tokenData> '*' '+' '{' '}' '[' ']' ';' '-' '>' '<' '=' ':' ',' '/' '(' ')' '%' '?'
 %type <tokenData> term
-%type <tree> program precomList declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId typeSpec funDecl parms parmList parmTypeList
+%type <tree> program precomList declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId funDecl parms parmList parmTypeList
 %type <tree> parmIdList parmId stmt matched iterRange unmatched expstmt compoundstmt localDecls stmtList returnstmt breakstmt
 %type <tree> exp assignop simpleExp andExp unaryRelExp relExp relop minmaxExp
 %type <tree> minmaxop sumExp sumop mulExp mulop unaryExp unaryop factor mutablel
+%type <type> typeSpec
 %type <tree> immutable call args argList constant
 %%
 program  :  precomList declList {syntaxTree = $2;}
@@ -83,18 +85,18 @@ precomList : precomList PRECOMPILER {$$ = $1;}
 	;
 
 declList : declList decl {$$ = addSibling($1, $2);}
-	| decl {}
+	| decl {$$ = $1;}
 	;
 
-decl : varDecl {}
-	| funDecl {}
+decl : varDecl {$$ = $1;}
+	| funDecl {$$ = $1;}
 	;
 
-varDecl : typeSpec varDeclList ';' {}
+varDecl : typeSpec varDeclList ';' {$$ = $2; setType($2, $1, false); yyerrok;}
 ;
 
-scopedVarDecl : STATIC typeSpec varDeclList ';' {}
-	| typeSpec varDeclList ';' {}
+scopedVarDecl : STATIC typeSpec varDeclList ';' {$$ = $3; setType($3, $2, true); yyerrok;}
+	| typeSpec varDeclList ';' {$$ = $2; setType($2, $1, false); yyerrok;}
 	;
 
 varDeclList : varDeclList ',' varDeclInit {}
@@ -113,16 +115,16 @@ typeSpec : INT {}
 	| CHAR {}
 	;
 
-funDecl : typeSpec ID '(' parms ')' stmt {}
-	| ID '(' parms ')' stmt {}
+funDecl : typeSpec ID '(' parms ')' stmt {$$ = newDeclNode(FuncK, $1, $2, $4, $6);}
+	| ID '(' parms ')' stmt {$$ = newDeclNode(FuncK, Void, $1, $3, $5);}
 	;
 
-parms : parmList {}
-	| /*empty*/ {}
+parms : parmList {$$ = $1;}
+	| /*empty*/ {$$ = NULL;}
 	;
 
-parmList : parmList ';' parmTypeList {}
-	| parmTypeList {}
+parmList : parmList ';' parmTypeList {addSibling($1, $3);}
+	| parmTypeList {$$ = $1;}
 	;
 
 parmTypeList : typeSpec parmIdList {}
@@ -162,15 +164,15 @@ unmatched : IF simpleExp THEN stmt {}
 expstmt : exp ';' {}
 	;
 
-compoundstmt : '{' localDecls stmtList '}' {}
+compoundstmt : '{' localDecls stmtList '}' {$$ = newStmtNode(StmtKind::CompoundK, $1, $2, $3);}
 	;
 
 localDecls : localDecls scopedVarDecl {}
-	| /* empty */ {}
+	| /* empty */ {$$ = NULL;}
 	;
 
-stmtList : stmtList stmt // empty stmt test {}
-	| /* empty */ {}
+stmtList : stmtList stmt {}
+	| /* empty */ {$$ = NULL;}
 	;
 
 returnstmt : RETURN ';' {}
@@ -285,6 +287,7 @@ constant : NUMCONST {}
 
 term  :
 	  ERROR    {cout << "ERROR(" << yylval.tinfo.linenum << "): Invalid or misplaced input character: '" << yylval.tinfo.tokenstr << "'. Character Ignored.\n";}
+	  COMMENT {}
 	;
 %%
 void yyerror (const char *msg)
