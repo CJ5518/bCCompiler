@@ -66,11 +66,11 @@ whitespace  [\ \t]
 true|false { return setValue(lineNum, BOOLCONST, yytext); }
 "static" { return setValue(lineNum, STATIC, yytext); }
 
-\/\/.* { return setValue(lineNum, COMMENT, yytext); }
+\/\/.* { }
 
 
 \"((\\\")|([^\n\"]))*\"  { return setValue(lineNum, STRINGCONST, yytext); }
-\'..?\' { return setValue(lineNum, CHARCONST, yytext); }
+\'\\?.\' { return setValue(lineNum, CHARCONST, yytext); }
 
 {op} { return setValue(lineNum, yytext[0], yytext); }
 {digit}+     { return setValue(lineNum, NUMCONST, yytext); }
