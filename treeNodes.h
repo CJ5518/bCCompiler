@@ -22,7 +22,7 @@ enum NodeKind {DeclK, StmtK, ExpK};
 enum DeclKind {VarK, FuncK, ParamK};
 
 // Subkinds of Statements
-enum  StmtKind {IfK, WhileK, ForK, CompoundK, ReturnK, BreakK, RangeK};
+enum StmtKind {IfK, WhileK, ForK, CompoundK, ReturnK, BreakK, RangeK};
 
 // Subkinds of Expressions
 enum ExpKind {AssignK, CallK, ConstantK, IdK, OpK};

@@ -64,7 +64,7 @@ TreeNode* syntaxTree;
 	TreeNode *tree;
 	ExpType type; // for passing type spec up the tree
 }
-%token <tokenData> OP INT ID NUMCONST IF ELSE THEN TO DO FOR RETURN ERROR PRECOMPILER
+%token <tokenData> INT ID NUMCONST IF ELSE THEN TO DO FOR RETURN ERROR PRECOMPILER
 %token <tokenData> BOOLCONST STATIC OR BOOL BREAK BY CHAR AND CHARCONST COMMENT NOT WHILE
 %token <tokenData> EQ GEQ LEQ DEC DIVASS SUBASS ADDASS INC MULASS NEQ MAX MIN STRINGCONST
 %token <tokenData> '*' '+' '{' '}' '[' ']' ';' '-' '>' '<' '=' ':' ',' '/' '(' ')' '%' '?'
@@ -164,7 +164,7 @@ unmatched : IF simpleExp THEN stmt {}
 expstmt : exp ';' {}
 	;
 
-compoundstmt : '{' localDecls stmtList '}' {$$ = newStmtNode(StmtKind::CompoundK, $1, $2, $3);}
+compoundstmt : '{' localDecls stmtList '}' {$$ = newStmtNode(CompoundK, $1, $2, $3);}
 	;
 
 localDecls : localDecls scopedVarDecl {}
@@ -331,11 +331,8 @@ int main(int argc, char **argv) {
 			//printDotTree(stdout, syntaxTree, false, false);
 		}
 	}
-	else {
-		printf("-----------\n");
-		printf("Errors: %d\n", numErrors);
-		printf("-----------\n");
-	}
+	printf("Number of warnings: %d\n", numWarnings);
+	printf("Number of errors: %d\n", numErrors);
 	return 0;
 }
 

@@ -1,5 +1,8 @@
 #DRBC this is a precompiler message
-//comment
+
+//varDeclList, typeSpec
+int x:42, y:666;
+
 main()
 {
 }

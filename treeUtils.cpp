@@ -31,19 +31,7 @@ TreeNode* newGenericNode(TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode 
 	TreeNode* newNode = allocNode();
 	newNode->lineno = token->linenum;
 	newNode->attr.op = token->tokenclass;
-	//IMPORTANT I am unsure about these following lines
-	if (c0) {
-		c0->lineno = token->linenum;
-		c0->attr.op = token->tokenclass;
-	}
-	if (c1) {
-		c1->lineno = token->linenum;
-		c1->attr.op = token->tokenclass;
-	}
-	if (c2) {
-		c2->lineno = token->linenum;
-		c2->attr.op = token->tokenclass;
-	}
+	
 	newNode->child[0] = c0;
 	newNode->child[1] = c1;
 	newNode->child[2] = c2;
@@ -79,15 +67,15 @@ const char *tokenToStr(int type) {
 const char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {
 	switch (type) {
 		case ExpType::Boolean:
-		return "Boolean";
+		return "boolean";
 		case ExpType::Char:
-		return "Char";
+		return "char";
 		case ExpType::Integer:
-		return "Integer";
+		return "integer";
 		case ExpType::UndefinedType:
 		return "UNDEFINED";
 		case ExpType::Void:
-		return "Void";
+		return "void";
 		default: 
 		return "BAD EXP TYPE";
 	}
@@ -148,7 +136,8 @@ void printTreeNodeBC(FILE *listing,
 	   break;
    case FuncK:
 			printf("Func: %s ", tree->attr.name);
-			printf("returns %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
+			//EDITED
+			printf("returns type %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
 			if (showAllocation) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}

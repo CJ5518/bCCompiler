@@ -28,7 +28,7 @@ cleaner:
 	rm -f bC
 
 test: $(BIN)
-	./bC precomp.bC
+	./test.sh
 
 tar:
 	tar -cvf c-.tar $(SRCS) makefile 
