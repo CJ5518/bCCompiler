@@ -41,7 +41,7 @@ TreeNode* addSibling(TreeNode* to, TreeNode* newSibling) {
 	//Add the new sibling to the end of the linked list
 	next->sibling = newSibling;
 
-	return newSibling;
+	return to;
 }
 // pass the static and type attribute down the sibling list
 void setType(TreeNode* t, ExpType type, bool isStatic) {
@@ -122,19 +122,19 @@ parms : parmList {$$ = $1;}
 	| /*empty*/ {$$ = NULL;}
 	;
 
-parmList : parmList ';' parmTypeList {addSibling($1, $3);}
+parmList : parmList ';' parmTypeList {$$ = addSibling($1, $3);}
 	| parmTypeList {$$ = $1;}
 	;
 
-parmTypeList : typeSpec parmIdList {}
+parmTypeList : typeSpec parmIdList {$$ = $2; setType($2, $1, false);}
 	;
 
-parmIdList : parmIdList ',' parmId {}
-	| parmId {}
+parmIdList : parmIdList ',' parmId {$$ = addSibling($1, $3);}
+	| parmId {$$ = $1;}
 	;
 
-parmId : ID {}
-	| ID '[' ']' {}
+parmId : ID {$$ = newDeclNode(DeclKind::ParamK, ExpType::UndefinedType, $1);}
+	| ID '[' ']' {$$ = newDeclNode(DeclKind::ParamK, ExpType::UndefinedType, $1); $$->isArray = true;}
 	;
 
 stmt : matched {$$ = $1;}
@@ -145,9 +145,9 @@ matched : IF simpleExp THEN matched ELSE matched {}
 	| WHILE simpleExp DO matched {}
 	| FOR ID '=' iterRange DO matched {}
 	| expstmt {$$ = $1;}
-	| compoundstmt {}
-	| returnstmt {}
-	| breakstmt {}
+	| compoundstmt {$$ = $1;}
+	| returnstmt {$$ = $1;}
+	| breakstmt {$$ = $1;}
 	;
 
 iterRange : simpleExp TO simpleExp {}
@@ -254,7 +254,7 @@ unaryop : '-' {}
 	;
 
 factor : immutable {$$ = $1;}
-	| mutable {}
+	| mutable {$$ = $1;}
 	;
 
 mutable : ID {$$ = newExpNode(ExpKind::IdK, $1);}
@@ -269,12 +269,12 @@ immutable : '(' exp ')' {}
 call : ID '(' args ')' {}
 	;
 
-args : argList {}
-	| /* empty */ {}
+args : argList {$$ = $1;}
+	| /* empty */ {$$ = NULL;}
 	;
 
-argList : argList ',' exp {}
-	| exp {}
+argList : argList ',' exp {$$ = addSibling($1, $3);}
+	| exp {$$ = $1;}
 	;
 
 constant : NUMCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Integer;}

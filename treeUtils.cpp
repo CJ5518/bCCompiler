@@ -120,6 +120,10 @@ void printTreeNode(FILE *listing,
 				   bool showExpType,
 				   bool showAllocation)
 {
+	if (!tree) {
+		fprintf(listing, "NULL");
+		return;
+	}
    // print a declaration node
 	if (tree->nodekind == NodeKind::DeclK) {
    switch (tree->kind.decl) {
@@ -268,19 +272,26 @@ void printTreeRecursive(FILE* out, TreeNode* tree, bool showExpType, bool showAl
 	//Print this node
 	printTreeNode(out, tree, showExpType, showAllocation);
 	fprintf(out, "\n");
-	depth++;
 
 	//Print children
 	for (int q = 0; q < MAXCHILDREN; q++) {
 		if (tree->child[q]) {
-			printDepth(out, depth);
+			printDepth(out, depth + 1);
 			//Two spaces after this because BC loves her weird spacing
 			fprintf(out, "Child: %d  ", q);
+			printTreeRecursive(out, tree->child[q], showExpType, showAllocation, depth + 1);
 		}
-		printTreeRecursive(out, tree->child[q], showExpType, showAllocation, depth);
 	}
 
-	//TODO - IMPORTANT print siblings
+	TreeNode* next = tree->sibling;
+	int count = 1;
+	while (next) {
+		printDepth(out, depth);
+		fprintf(out, "Sibling: %d  ", count);
+		printTreeRecursive(out, next, showExpType, showAllocation, depth);
+		next = next->sibling;
+		count++;
+	}
 	
 }
 
