@@ -2,7 +2,6 @@
 
 main()
 {
-	int a, b;
-	a = 4;
-	b = 1;
+	int a;
+	a += 1;
 }

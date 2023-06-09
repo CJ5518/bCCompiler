@@ -21,6 +21,11 @@ extern int yylex();
 
 //Add a sibling to a node
 TreeNode* addSibling(TreeNode* to, TreeNode* newSibling) {
+	// printf("Add To: "); fflush(stdout);
+	// printTreeNode(stdout, to, false, false); fflush(stdout);
+	// printf("\nThis: "); fflush(stdout);
+	// printTreeNode(stdout, newSibling, false, false); fflush(stdout);
+	// printf("\n---------------------------------\n");
 	//Check them both for NULL
 	if (to == NULL) {
 		return newSibling;
@@ -37,6 +42,7 @@ TreeNode* addSibling(TreeNode* to, TreeNode* newSibling) {
 		if (next->sibling == NULL) {
 			break;
 		}
+		next = next->sibling;
 	}
 	//Add the new sibling to the end of the linked list
 	next->sibling = newSibling;
@@ -103,7 +109,8 @@ varDeclList : varDeclList ',' varDeclInit {$$ = $1; addSibling($1, $3);}
 	;
 
 varDeclInit : varDeclId {$$ = $1;}
-;
+	| varDeclId ':' simpleExp {}
+	;
 
 varDeclId : ID {$$ = newDeclNode(DeclKind::VarK, ExpType::UndefinedType, $1);}
 	| ID '[' NUMCONST ']' {}
@@ -189,10 +196,10 @@ exp : mutable assignop exp {$$ = $2; $$->child[0] = $1; $$->child[1] = $3;}
 	;
 
 assignop : '=' {$$ = newExpNode(ExpKind::AssignK, $1);}
-	| ADDASS {}
-	| SUBASS {}
-	| MULASS {}
-	| DIVASS {}
+	| ADDASS {$$ = newExpNode(ExpKind::AssignK, $1);}
+	| SUBASS {$$ = newExpNode(ExpKind::AssignK, $1);}
+	| MULASS {$$ = newExpNode(ExpKind::AssignK, $1);}
+	| DIVASS {$$ = newExpNode(ExpKind::AssignK, $1);}
 	;
 
 simpleExp : simpleExp OR andExp {}

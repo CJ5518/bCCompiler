@@ -70,6 +70,9 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0L, TreeNode *c1
 		newNode->attr.cvalue = token->cvalue;
 	}
 
+	//Gonna do some string compare shit
+	//Make OpType an actual enum class
+
 	return newNode;
 }
 const char *tokenToStr(int type) {
@@ -263,7 +266,7 @@ void printDepth(FILE* file, int depth) {
 	}
 }
 
-void printTreeRecursive(FILE* out, TreeNode* tree, bool showExpType, bool showAllocation, int depth) {
+void printTreeRecursive(FILE* out, TreeNode* tree, bool showExpType, bool showAllocation, int depth, int siblingCount = 1) {
 	if (tree == NULL) {
 		return;
 	}
@@ -283,14 +286,13 @@ void printTreeRecursive(FILE* out, TreeNode* tree, bool showExpType, bool showAl
 		}
 	}
 
-	TreeNode* next = tree->sibling;
-	int count = 1;
-	while (next) {
+	//Print this sibling
+	//Each sibling will print it's next sibling, and so on, so no loop needed
+	TreeNode* sibling = tree->sibling;
+	if (sibling) {
 		printDepth(out, depth);
-		fprintf(out, "Sibling: %d  ", count);
-		printTreeRecursive(out, next, showExpType, showAllocation, depth);
-		next = next->sibling;
-		count++;
+		fprintf(out, "Sibling: %d  ", siblingCount);
+		printTreeRecursive(out, sibling, showExpType, showAllocation, depth, siblingCount + 1);
 	}
 	
 }

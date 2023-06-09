@@ -12,7 +12,7 @@
 
 // Kinds of Operators
 // these are the token numbers for the operators same as in flex
-typedef int OpKind;  
+typedef int OpKind;
 
 // Kinds of Statements
 //typedef enum {DeclK, StmtK, ExpK} NodeKind;
