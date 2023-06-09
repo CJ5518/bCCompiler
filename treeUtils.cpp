@@ -42,7 +42,7 @@ TreeNode* newGenericNode(TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode 
 
 TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2) {
 	TreeNode* newNode = newGenericNode(token, c0, c1, c2);
-	newNode->nodekind = DeclK;
+	newNode->nodekind = NodeKind::DeclK;
 	newNode->kind.decl = kind;
 	newNode->attr.name = token->svalue;
 	newNode->type = type;
@@ -51,13 +51,13 @@ TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c
 }
 TreeNode *newStmtNode(StmtKind kind, TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2) {
 	TreeNode* newNode = newGenericNode(token, c0, c1, c2);
-	newNode->nodekind = StmtK;
+	newNode->nodekind = NodeKind::StmtK;
 	newNode->kind.stmt = kind;
 	return newNode;
 }
 TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0L, TreeNode *c1L, TreeNode *c2L) {
 	TreeNode* newNode = newGenericNode(token, c0L, c1L, c2L);
-	newNode->nodekind = ExpK;
+	newNode->nodekind = NodeKind::ExpK;
 	newNode->kind.exp = kind;
 	return newNode;
 }
@@ -85,16 +85,16 @@ const char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {
 void printTreeNode(FILE *out, TreeNode *node, bool showExpType, bool showAllocation) {
 	fprintf(out, "Node number: %d\n", node->nodeNum);
 	fprintf(out, "Line number: %d\n", node->lineno);
-	fprintf(out, "nodekind: %d", node->nodekind);
+	fprintf(out, "nodekind: %d", (int)node->nodekind);
 	switch (node->nodekind) {
 		case NodeKind::DeclK:
-			fprintf(out, "%d\n", node->kind.decl);
+			fprintf(out, "%d\n", (int)node->kind.decl);
 		break;
 		case NodeKind::ExpK:
-			fprintf(out, "%d\n", node->kind.exp);
+			fprintf(out, "%d\n", (int)node->kind.exp);
 		break;
 		case NodeKind::StmtK:
-			fprintf(out, "%d\n", node->kind.stmt);
+			fprintf(out, "%d\n", (int)node->kind.stmt);
 		break;
 		default:
 			fprintf(out, "Bad NodeKind in node\n");
@@ -125,16 +125,16 @@ void printTreeNodeBC(FILE *listing,
 				   bool showAllocation)
 {
    // print a declaration node
-	if (tree->nodekind == DeclK) {
+	if (tree->nodekind == NodeKind::DeclK) {
    switch (tree->kind.decl) {
-   case VarK:
+   case DeclKind::VarK:
 			printf("Var: %s ", tree->attr.name);
 			printf("of %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
 			if (showAllocation) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
 	   break;
-   case FuncK:
+   case DeclKind::FuncK:
 			printf("Func: %s ", tree->attr.name);
 			//EDITED
 			printf("returns type %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
@@ -142,7 +142,7 @@ void printTreeNodeBC(FILE *listing,
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
 	   break;
-   case ParamK:
+   case DeclKind::ParamK:
 			printf("Parm: %s ", tree->attr.name);
 			printf("of %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
 			if (showAllocation) {
@@ -151,66 +151,66 @@ void printTreeNodeBC(FILE *listing,
 	   break;
    default:
 	   fprintf(listing, "Unknown declaration node kind: %d",
-		  tree->kind.decl);
+		  (int)tree->kind.decl);
 	   break;
    }
 	}
 
 	// print a statement node
-	else if (tree->nodekind == StmtK) {
+	else if (tree->nodekind == NodeKind::StmtK) {
    switch (tree->kind.stmt) {
-   case IfK:
+   case StmtKind::IfK:
 	   fprintf(listing, "If");
 	   break;
-   case WhileK:
+   case StmtKind::WhileK:
 	   fprintf(listing, "While");
 	   break;
-   case CompoundK:
+   case StmtKind::CompoundK:
 	   fprintf(listing, "Compound");
 			if (showAllocation) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
 	   break;
-		case ForK:
+		case StmtKind::ForK:
 	   fprintf(listing, "For");
 			if (showAllocation) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
 	   break;
-		case RangeK:
+		case StmtKind::RangeK:
 	   fprintf(listing, "Range");
 	   break;
-   case ReturnK:
+   case StmtKind::ReturnK:
 	   fprintf(listing, "Return");
 	   break;
-   case BreakK:
+   case StmtKind::BreakK:
 	   fprintf(listing, "Break");
 	   break;
    default:
 	   fprintf(listing, "Unknown  statement node kind: %d",
-		  tree->kind.stmt);
+		  (int)tree->kind.stmt);
 	   break;
    }
 	}
 
 	// print an expression node
-	else if (tree->nodekind == ExpK) {
+	else if (tree->nodekind == NodeKind::ExpK) {
    switch (tree->kind.exp) {
-   case AssignK:
+   case ExpKind::AssignK:
 	   fprintf(listing, "Assign: %s", tokenToStr(tree->attr.op));
 	   break;
-   case OpK:
+   case ExpKind::OpK:
 	   fprintf(listing, "Op: %s", tokenToStr(tree->attr.op));
 	   break;
-   case ConstantK:
+   case ExpKind::ConstantK:
 			switch (tree->type) {
-			case Boolean:
+			case ExpType::Boolean:
 	  fprintf(listing, "Const %s", (tree->attr.value) ?  "true" : "false");
 				break;
-			case Integer:
+			case ExpType::Integer:
 	  fprintf(listing, "Const %d", tree->attr.value);
 				break;
-			case Char:
+			case ExpType::Char:
 				if (tree->isArray) {
 					fprintf(listing, "Const ");
 					printf("\"");
@@ -221,32 +221,32 @@ void printTreeNodeBC(FILE *listing,
 				}
 	  else fprintf(listing, "Const '%c'", tree->attr.cvalue);
 				break;
-			case Void:
-			case UndefinedType:
+			case ExpType::Void:
+			case ExpType::UndefinedType:
 				fprintf(listing, "SYSTEM ERROR: parse tree contains invalid type for constant: %s\n", expTypeToStr(tree->type));
 	   }
 	   break;
-   case IdK:
+   case ExpKind::IdK:
 	   fprintf(listing, "Id: %s", tree->attr.name);
 	   break;
-   case CallK:
+   case ExpKind::CallK:
 	   fprintf(listing, "Call: %s", tree->attr.name);
 	   break;
    default:
-	   fprintf(listing, "Unknown expression node kind: %d", tree->kind.exp);
+	   fprintf(listing, "Unknown expression node kind: %d", (int)tree->kind.exp);
 	   break;
    }
    if (showExpType) {
 	   fprintf(listing, " of %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
    }
 		if (showAllocation) {
-			if (tree->kind.exp == IdK || tree->kind.exp == ConstantK && tree->type == Char && tree->isArray) {
+			if (tree->kind.exp == ExpKind::IdK || tree->kind.exp == ExpKind::ConstantK && tree->type == ExpType::Char && tree->isArray) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
 		}
 	}
 	else fprintf(listing, "Unknown class of node: %d",
-	   tree->nodekind);
+	   (int)tree->nodekind);
 
 	fprintf(listing, " [line: %d]", tree->lineno);
 }

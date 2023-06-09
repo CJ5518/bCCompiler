@@ -16,27 +16,27 @@ typedef int OpKind;
 
 // Kinds of Statements
 //typedef enum {DeclK, StmtK, ExpK} NodeKind;
-enum NodeKind {DeclK, StmtK, ExpK};
+enum class NodeKind {DeclK, StmtK, ExpK};
 
 // Subkinds of Declarations
-enum DeclKind {VarK, FuncK, ParamK};
+enum class DeclKind {VarK, FuncK, ParamK};
 
 // Subkinds of Statements
-enum StmtKind {IfK, WhileK, ForK, CompoundK, ReturnK, BreakK, RangeK};
+enum class StmtKind {IfK, WhileK, ForK, CompoundK, ReturnK, BreakK, RangeK};
 
 // Subkinds of Expressions
-enum ExpKind {AssignK, CallK, ConstantK, IdK, OpK};
+enum class ExpKind {AssignK, CallK, ConstantK, IdK, OpK};
 
 // =====
 
 // Type of variables
-enum ExpType {Void, Integer, Boolean, Char, UndefinedType};
+enum class ExpType {Void, Integer, Boolean, Char, UndefinedType};
 
 // expected types for operator: 3 unary + 4 binary
-enum ExpectType {OneInt, OneBool, OneArray, IntInt, BoolBool, Equal, ArrayInt};
+enum class ExpectType {OneInt, OneBool, OneArray, IntInt, BoolBool, Equal, ArrayInt};
 
 // expected return types for operator
-enum ReturnType {RetInt, RetBool, RetLHS};
+enum class ReturnType {RetInt, RetBool, RetLHS};
 
 // =====
 

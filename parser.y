@@ -115,8 +115,8 @@ typeSpec : INT {}
 	| CHAR {}
 	;
 
-funDecl : typeSpec ID '(' parms ')' stmt {$$ = newDeclNode(FuncK, $1, $2, $4, $6);}
-	| ID '(' parms ')' stmt {$$ = newDeclNode(FuncK, Void, $1, $3, $5);}
+funDecl : typeSpec ID '(' parms ')' stmt {$$ = newDeclNode(DeclKind::FuncK, $1, $2, $4, $6);}
+	| ID '(' parms ')' stmt {$$ = newDeclNode(DeclKind::FuncK, ExpType::Void, $1, $3, $5);}
 	;
 
 parms : parmList {$$ = $1;}
@@ -164,7 +164,7 @@ unmatched : IF simpleExp THEN stmt {}
 expstmt : exp ';' {}
 	;
 
-compoundstmt : '{' localDecls stmtList '}' {$$ = newStmtNode(CompoundK, $1, $2, $3);}
+compoundstmt : '{' localDecls stmtList '}' {$$ = newStmtNode(StmtKind::CompoundK, $1, $2, $3);}
 	;
 
 localDecls : localDecls scopedVarDecl {}
