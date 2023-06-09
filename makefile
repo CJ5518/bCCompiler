@@ -1,27 +1,26 @@
-BIN  = bC  # name of thing to be built goes here
-PARSE = parser
+BIN  = bC  # name of thing to be built goes hereunknown class
 CC   = g++
-# CFLAGS = -g
-CPPFLAGS = -O0 -g -I./ -std=c++11 # for use with C++ if file ext is .c
 
-SRCS = $(PARSE).y $(PARSE).l treeUtils.cpp
-OBJS = lex.yy.o $(PARSE).tab.o treeUtils.o
+CPPFLAGS = -O0 -g -I./ -std=c++11
+SRCS = parser.y parser.l treeUtils.cpp
+HDRS = scanType.h treeNodes.h treeUtils.h
+OBJS = lex.yy.o parser.tab.o treeUtils.o
 LIBS = -lm 
 
 $(BIN): $(OBJS)
 	$(CC) $(CCFLAGS) $(OBJS) $(LIBS) -o $(BIN)
 
-$(PARSE).tab.h $(PARSE).tab.c: $(PARSE).y scanType.h treeUtils.h
-	bison -v -t -d --debug $(PARSE).y
+parser.tab.h parser.tab.c: parser.y scanType.h treeUtils.h
+	bison -v -t -d --debug parser.y
 
-lex.yy.c: $(PARSE).l $(PARSE).tab.h scanType.h
-	flex $(PARSE).l
+lex.yy.c: parser.l parser.tab.h scanType.h
+	flex parser.l
 
 all:
 	make
 
 clean:
-	rm -f $(OBJS) c- lex.yy.c $(PARSE).tab.h $(PARSE).tab.c c-.tar $(PARSE).output core
+	rm -f $(OBJS) c- lex.yy.c parser.tab.h parser.tab.c c-.tar parser.output core
 
 cleaner:
 	make clean
