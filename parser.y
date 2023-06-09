@@ -324,7 +324,7 @@ int main(int argc, char **argv) {
 		fclose (yyin);
 	}
 	if (numErrors==0) {
-		printTree(stdout, syntaxTree, true, false);
+		printTree(stdout, syntaxTree, false, false);
 		if(dotAST) {
 			//IMPORTANT - I commented this out
 			//printDotTree(stdout, syntaxTree, false, false);

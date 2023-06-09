@@ -59,6 +59,17 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0L, TreeNode *c1
 	TreeNode* newNode = newGenericNode(token, c0L, c1L, c2L);
 	newNode->nodekind = NodeKind::ExpK;
 	newNode->kind.exp = kind;
+
+	if (kind == ExpKind::IdK) {
+		newNode->attr.name = token->svalue;
+	}
+
+	if (kind == ExpKind::ConstantK) {
+		newNode->attr.value = token->nvalue;
+		newNode->attr.string = token->svalue;
+		newNode->attr.cvalue = token->cvalue;
+	}
+
 	return newNode;
 }
 const char *tokenToStr(int type) {
@@ -183,11 +194,9 @@ void printTreeNode(FILE *listing,
 		switch (tree->kind.exp) {
 		case ExpKind::AssignK:
 			fprintf(listing, "Assign: %s", tokenToStr(tree->attr.op));
-			showExpType = false;
 			break;
 		case ExpKind::OpK:
 			fprintf(listing, "Op: %s", tokenToStr(tree->attr.op));
-			showExpType = false;
 			break;
 		case ExpKind::ConstantK:
 				switch (tree->type) {
@@ -218,6 +227,7 @@ void printTreeNode(FILE *listing,
 			break;
 		case ExpKind::CallK:
 			fprintf(listing, "Call: %s", tree->attr.name);
+			//IMPORTANT Maybe?
 			break;
 		default:
 			fprintf(listing, "Unknown expression node kind: %d", (int)tree->kind.exp);
