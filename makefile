@@ -12,7 +12,7 @@ $(BIN): $(OBJS)
 	$(CC) $(CCFLAGS) $(OBJS) $(LIBS) -o $(BIN)
 
 $(PARSE).tab.h $(PARSE).tab.c: $(PARSE).y scanType.h treeUtils.h
-	bison -v -t -d $(PARSE).y
+	bison -v -t -d --debug $(PARSE).y
 
 lex.yy.c: $(PARSE).l $(PARSE).tab.h scanType.h
 	flex $(PARSE).l

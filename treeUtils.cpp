@@ -62,7 +62,12 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0L, TreeNode *c1
 	return newNode;
 }
 const char *tokenToStr(int type) {
-	return "NotImplemented";
+	switch (type) {
+		case '=':
+		return "=";
+		default: 
+		return "Token to Str has not been finished, time to do that";
+	}
 }
 const char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {
 	switch (type) {
@@ -71,33 +76,13 @@ const char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {
 		case ExpType::Char:
 		return "char";
 		case ExpType::Integer:
-		return "integer";
+		return "int";
 		case ExpType::UndefinedType:
 		return "UNDEFINED";
 		case ExpType::Void:
 		return "void";
 		default: 
 		return "BAD EXP TYPE";
-	}
-}
-
-//Use fprintf
-void printTreeNode(FILE *out, TreeNode *node, bool showExpType, bool showAllocation) {
-	fprintf(out, "Node number: %d\n", node->nodeNum);
-	fprintf(out, "Line number: %d\n", node->lineno);
-	fprintf(out, "nodekind: %d", (int)node->nodekind);
-	switch (node->nodekind) {
-		case NodeKind::DeclK:
-			fprintf(out, "%d\n", (int)node->kind.decl);
-		break;
-		case NodeKind::ExpK:
-			fprintf(out, "%d\n", (int)node->kind.exp);
-		break;
-		case NodeKind::StmtK:
-			fprintf(out, "%d\n", (int)node->kind.stmt);
-		break;
-		default:
-			fprintf(out, "Bad NodeKind in node\n");
 	}
 }
 
@@ -119,7 +104,7 @@ const char* varKindToStr(VarKind kind) {
 }
 
 // print a node without a newline
-void printTreeNodeBC(FILE *listing,
+void printTreeNode(FILE *listing,
 				   TreeNode *tree,
 				   bool showExpType,
 				   bool showAllocation)
@@ -129,7 +114,7 @@ void printTreeNodeBC(FILE *listing,
    switch (tree->kind.decl) {
    case DeclKind::VarK:
 			printf("Var: %s ", tree->attr.name);
-			printf("of %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
+			printf("of type %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
 			if (showAllocation) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
@@ -144,7 +129,7 @@ void printTreeNodeBC(FILE *listing,
 	   break;
    case DeclKind::ParamK:
 			printf("Parm: %s ", tree->attr.name);
-			printf("of %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
+			printf("of type %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
 			if (showAllocation) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
@@ -195,50 +180,52 @@ void printTreeNodeBC(FILE *listing,
 
 	// print an expression node
 	else if (tree->nodekind == NodeKind::ExpK) {
-   switch (tree->kind.exp) {
-   case ExpKind::AssignK:
-	   fprintf(listing, "Assign: %s", tokenToStr(tree->attr.op));
-	   break;
-   case ExpKind::OpK:
-	   fprintf(listing, "Op: %s", tokenToStr(tree->attr.op));
-	   break;
-   case ExpKind::ConstantK:
-			switch (tree->type) {
-			case ExpType::Boolean:
-	  fprintf(listing, "Const %s", (tree->attr.value) ?  "true" : "false");
-				break;
-			case ExpType::Integer:
-	  fprintf(listing, "Const %d", tree->attr.value);
-				break;
-			case ExpType::Char:
-				if (tree->isArray) {
-					fprintf(listing, "Const ");
-					printf("\"");
-					for (int i=0; i<tree->size-1; i++) {
-						printf("%c", tree->attr.string[i]);
+		switch (tree->kind.exp) {
+		case ExpKind::AssignK:
+			fprintf(listing, "Assign: %s", tokenToStr(tree->attr.op));
+			showExpType = false;
+			break;
+		case ExpKind::OpK:
+			fprintf(listing, "Op: %s", tokenToStr(tree->attr.op));
+			showExpType = false;
+			break;
+		case ExpKind::ConstantK:
+				switch (tree->type) {
+				case ExpType::Boolean:
+		fprintf(listing, "Const %s", (tree->attr.value) ?  "true" : "false");
+					break;
+				case ExpType::Integer:
+		fprintf(listing, "Const %d", tree->attr.value);
+					break;
+				case ExpType::Char:
+					if (tree->isArray) {
+						fprintf(listing, "Const ");
+						printf("\"");
+						for (int i=0; i<tree->size-1; i++) {
+							printf("%c", tree->attr.string[i]);
+						}
+						printf("\"");
 					}
-					printf("\"");
-				}
-	  else fprintf(listing, "Const '%c'", tree->attr.cvalue);
-				break;
-			case ExpType::Void:
-			case ExpType::UndefinedType:
-				fprintf(listing, "SYSTEM ERROR: parse tree contains invalid type for constant: %s\n", expTypeToStr(tree->type));
-	   }
-	   break;
-   case ExpKind::IdK:
-	   fprintf(listing, "Id: %s", tree->attr.name);
-	   break;
-   case ExpKind::CallK:
-	   fprintf(listing, "Call: %s", tree->attr.name);
-	   break;
-   default:
-	   fprintf(listing, "Unknown expression node kind: %d", (int)tree->kind.exp);
-	   break;
-   }
-   if (showExpType) {
-	   fprintf(listing, " of %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
-   }
+		else fprintf(listing, "Const '%c'", tree->attr.cvalue);
+					break;
+				case ExpType::Void:
+				case ExpType::UndefinedType:
+					fprintf(listing, "SYSTEM ERROR: parse tree contains invalid type for constant: %s\n", expTypeToStr(tree->type));
+		}
+		break;
+		case ExpKind::IdK:
+			fprintf(listing, "Id: %s", tree->attr.name);
+			break;
+		case ExpKind::CallK:
+			fprintf(listing, "Call: %s", tree->attr.name);
+			break;
+		default:
+			fprintf(listing, "Unknown expression node kind: %d", (int)tree->kind.exp);
+			break;
+		}
+		if (showExpType) {
+			fprintf(listing, " of type %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
+		}
 		if (showAllocation) {
 			if (tree->kind.exp == ExpKind::IdK || tree->kind.exp == ExpKind::ConstantK && tree->type == ExpType::Char && tree->isArray) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
@@ -262,6 +249,31 @@ void printDepth(FILE* file, int depth) {
 	}
 }
 
+void printTreeRecursive(FILE* out, TreeNode* tree, bool showExpType, bool showAllocation, int depth) {
+	if (tree == NULL) {
+		return;
+	}
+
+
+	//Print this node
+	printTreeNode(out, tree, showExpType, showAllocation);
+	fprintf(out, "\n");
+	depth++;
+
+	//Print children
+	for (int q = 0; q < MAXCHILDREN; q++) {
+		if (tree->child[q]) {
+			printDepth(out, depth);
+			//Two spaces after this because BC loves her weird spacing
+			fprintf(out, "Child: %d  ", q);
+		}
+		printTreeRecursive(out, tree->child[q], showExpType, showAllocation, depth);
+	}
+
+	//TODO - IMPORTANT print siblings
+	
+}
+
 //Prints the tree all nice-like
 void printTree(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAllocation) {
 
@@ -270,27 +282,6 @@ void printTree(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAlloc
 		return;
 	}
 
-	int depth = 1;
-	printTreeNodeBC(out, syntaxTree, showExpType, showAllocation);
-	while (syntaxTree) {
-		
-		TreeNode* next = syntaxTree->sibling;
-		while (next) {
-			printDepth(out, depth);
-			printTreeNodeBC(out, next, showExpType, showAllocation);
-			next = next->sibling;
-		}
-
-		fprintf(out, "\n");
-		for (int q = 0; q < MAXCHILDREN; q++) {
-			if (syntaxTree->child[q]) {
-				printDepth(out, depth);
-				fprintf(out, "Child: %d  ", q);
-				printTreeNodeBC(out, syntaxTree->child[q], showExpType, showAllocation);
-				fprintf(out, "\n");
-			}
-		}
-		break;
-		depth++;
-	}
+	printTreeRecursive(out, syntaxTree, showExpType, showAllocation, 0);
 }
+

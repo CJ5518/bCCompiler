@@ -23,8 +23,7 @@ extern int yylex();
 TreeNode* addSibling(TreeNode* to, TreeNode* newSibling) {
 	//Check them both for NULL
 	if (to == NULL) {
-		printf("Bad argument to TreeNode, to is null");
-		exit(1);
+		return newSibling;
 	}
 	if (newSibling == NULL) {
 		printf("Bad argument to TreeNode, newSibling is null");
@@ -72,7 +71,7 @@ TreeNode* syntaxTree;
 %type <tree> program precomList declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId funDecl parms parmList parmTypeList
 %type <tree> parmIdList parmId stmt matched iterRange unmatched expstmt compoundstmt localDecls stmtList returnstmt breakstmt
 %type <tree> exp assignop simpleExp andExp unaryRelExp relExp relop minmaxExp
-%type <tree> minmaxop sumExp sumop mulExp mulop unaryExp unaryop factor mutablel
+%type <tree> minmaxop sumExp sumop mulExp mulop unaryExp unaryop factor mutable
 %type <type> typeSpec
 %type <tree> immutable call args argList constant
 %%
@@ -95,24 +94,24 @@ decl : varDecl {$$ = $1;}
 varDecl : typeSpec varDeclList ';' {$$ = $2; setType($2, $1, false); yyerrok;}
 ;
 
-scopedVarDecl : STATIC typeSpec varDeclList ';' {$$ = $3; setType($3, $2, true); yyerrok;}
-	| typeSpec varDeclList ';' {$$ = $2; setType($2, $1, false); yyerrok;}
+scopedVarDecl : STATIC typeSpec varDeclList ';' {$$ = $3; setType($$, $2, true); yyerrok;}
+	| typeSpec varDeclList ';' {$$ = $2; setType($$, $1, false); yyerrok;}
 	;
 
-varDeclList : varDeclList ',' varDeclInit {}
-	| varDeclInit {}
+varDeclList : varDeclList ',' varDeclInit {$$ = $1; addSibling($1, $3);}
+	| varDeclInit {$$ = $1;}
 	;
 
-varDeclInit : varDeclId {}
+varDeclInit : varDeclId {$$ = $1;}
 ;
 
-varDeclId : ID {}
-	| ID '[' NUMCONST '[' {}
+varDeclId : ID {$$ = newDeclNode(DeclKind::VarK, ExpType::UndefinedType, $1);}
+	| ID '[' NUMCONST ']' {}
 	;
 
-typeSpec : INT {}
-	| BOOL {}
-	| CHAR {}
+typeSpec : INT {$$ = ExpType::Integer;}
+	| BOOL {$$ = ExpType::Boolean;}
+	| CHAR {$$ = ExpType::Char;}
 	;
 
 funDecl : typeSpec ID '(' parms ')' stmt {$$ = newDeclNode(DeclKind::FuncK, $1, $2, $4, $6);}
@@ -138,14 +137,14 @@ parmId : ID {}
 	| ID '[' ']' {}
 	;
 
-stmt : matched {}
-	| unmatched {}
+stmt : matched {$$ = $1;}
+	| unmatched {$$ = $1;}
 	;
 
 matched : IF simpleExp THEN matched ELSE matched {}
 	| WHILE simpleExp DO matched {}
 	| FOR ID '=' iterRange DO matched {}
-	| expstmt {}
+	| expstmt {$$ = $1;}
 	| compoundstmt {}
 	| returnstmt {}
 	| breakstmt {}
@@ -161,17 +160,17 @@ unmatched : IF simpleExp THEN stmt {}
 	| FOR ID '=' iterRange DO unmatched {}
 	;
 
-expstmt : exp ';' {}
+expstmt : exp ';' {$$ = $1;}
 	;
 
 compoundstmt : '{' localDecls stmtList '}' {$$ = newStmtNode(StmtKind::CompoundK, $1, $2, $3);}
 	;
 
-localDecls : localDecls scopedVarDecl {}
+localDecls : localDecls scopedVarDecl {$$ = addSibling($1, $2);}
 	| /* empty */ {$$ = NULL;}
 	;
 
-stmtList : stmtList stmt {}
+stmtList : stmtList stmt {$$ = addSibling($1, $2);}
 	| /* empty */ {$$ = NULL;}
 	;
 
@@ -182,14 +181,14 @@ returnstmt : RETURN ';' {}
 breakstmt : BREAK ';' {}
 	;
 
-exp : mutablel assignop exp {}
-	| mutablel INC {}
-	| mutablel DEC {}
-	| simpleExp {}
-	| mutablel assignop error {}
+exp : mutable assignop exp {$$ = $2; $$->child[0] = $1; $$->child[1] = $3;}
+	| mutable INC {}
+	| mutable DEC {}
+	| simpleExp {$$ = $1;}
+	| mutable assignop error {}
 	;
 
-assignop : '=' {}
+assignop : '=' {$$ = newExpNode(ExpKind::AssignK, $1);}
 	| ADDASS {}
 	| SUBASS {}
 	| MULASS {}
@@ -197,19 +196,19 @@ assignop : '=' {}
 	;
 
 simpleExp : simpleExp OR andExp {}
-	| andExp {}
+	| andExp {$$ = $1;}
 	;
 
 andExp : andExp AND unaryRelExp {}
-	| unaryRelExp {}
+	| unaryRelExp {$$ = $1;}
 	;
 
 unaryRelExp : NOT unaryRelExp {}
-	| relExp {}
+	| relExp {$$ = $1;}
 	;
 
 relExp : minmaxExp relop minmaxExp {}
-	| minmaxExp {}
+	| minmaxExp {$$ = $1;}
 	;
 
 relop : LEQ {}
@@ -221,7 +220,7 @@ relop : LEQ {}
 	;
 
 minmaxExp : minmaxExp minmaxop sumExp {}
-	| sumExp {}
+	| sumExp {$$ = $1;}
 	;
 
 minmaxop : MAX {}
@@ -229,7 +228,7 @@ minmaxop : MAX {}
 	;
 
 sumExp : sumExp sumop mulExp {}
-	| mulExp {}
+	| mulExp {$$ = $1;}
 	;
 
 sumop : '+' {}
@@ -237,7 +236,7 @@ sumop : '+' {}
 	;
 
 mulExp : mulExp mulop unaryExp {}
-	| unaryExp {}
+	| unaryExp {$$ = $1;}
 	;
 
 mulop : '*' {}
@@ -246,7 +245,7 @@ mulop : '*' {}
 	;
 
 unaryExp : unaryop unaryExp {}
-	| factor {}
+	| factor {$$ = $1;}
 	;
 
 unaryop : '-' {}
@@ -254,17 +253,17 @@ unaryop : '-' {}
 	| '?' {}
 	;
 
-factor : immutable {}
-	| mutablel {}
+factor : immutable {$$ = $1;}
+	| mutable {}
 	;
 
-mutablel : ID {}
+mutable : ID {$$ = newExpNode(ExpKind::IdK, $1);}
 	| ID '[' exp ']' {}
 	;
 
 immutable : '(' exp ')' {}
 	| call {}
-	| constant {}
+	| constant {$$ = $1;}
 	;
 
 call : ID '(' args ')' {}
@@ -278,10 +277,10 @@ argList : argList ',' exp {}
 	| exp {}
 	;
 
-constant : NUMCONST {}
-	| CHARCONST {}
-	| STRINGCONST {}
-	| BOOLCONST {}
+constant : NUMCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Integer;}
+	| CHARCONST {$$ = newExpNode(ExpKind::ConstantK, $1);}
+	| STRINGCONST {$$ = newExpNode(ExpKind::ConstantK, $1);}
+	| BOOLCONST {$$ = newExpNode(ExpKind::ConstantK, $1);}
 	;
 
 
