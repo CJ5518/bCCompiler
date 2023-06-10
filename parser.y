@@ -73,11 +73,11 @@ TreeNode* syntaxTree;
 %token <tokenData> BOOLCONST STATIC OR BOOL BREAK BY CHAR AND CHARCONST COMMENT NOT WHILE
 %token <tokenData> EQ GEQ LEQ DEC DIVASS SUBASS ADDASS INC MULASS NEQ MAX MIN STRINGCONST
 %token <tokenData> '*' '+' '{' '}' '[' ']' ';' '-' '>' '<' '=' ':' ',' '/' '(' ')' '%' '?'
-%type <tokenData> term assignop relop mulop minmaxop
+%type <tokenData> term assignop relop mulop minmaxop unaryop sumop
 %type <tree> program precomList declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId funDecl parms parmList parmTypeList
 %type <tree> parmIdList parmId stmt matched iterRange unmatched expstmt compoundstmt localDecls stmtList returnstmt breakstmt
 %type <tree> exp simpleExp andExp unaryRelExp relExp minmaxExp
-%type <tree> sumExp sumop mulExp unaryExp unaryop factor mutable
+%type <tree> sumExp mulExp unaryExp factor mutable
 %type <type> typeSpec
 %type <tree> immutable call args argList constant
 %%
@@ -234,30 +234,30 @@ minmaxop : MAX {$$ = $1;}
 	| MIN {$$ = $1;}
 	;
 
-sumExp : sumExp sumop mulExp {}
+sumExp : sumExp sumop mulExp {$$ = newExpNode(ExpKind::OpK, $2, $1, $3);}
 	| mulExp {$$ = $1;}
 	;
 
-sumop : '+' {$$ = newExpNode(ExpKind::OpK, $1);}
-	| '-' {}
+sumop : '+' {$$ = $1;}
+	| '-' {$$ = $1;}
 	;
 
-mulExp : mulExp mulop unaryExp {}
+mulExp : mulExp mulop unaryExp {$$ = newExpNode(ExpKind::OpK, $2, $1, $3);}
 	| unaryExp {$$ = $1;}
 	;
 
-mulop : '*' {}
-	| '/' {}
-	| '%' {}
+mulop : '*' {$$ = $1;}
+	| '/' {$$ = $1;}
+	| '%' {$$ = $1;}
 	;
 
-unaryExp : unaryop unaryExp {}
+unaryExp : unaryop unaryExp {$$ = newExpNode(ExpKind::OpK, $1, $2);}
 	| factor {$$ = $1;}
 	;
 
-unaryop : '-' {}
-	| '*' {}
-	| '?' {}
+unaryop : '-' {$$ = $1;}
+	| '*' {$$ = $1;}
+	| '?' {$$ = $1;}
 	;
 
 factor : immutable {$$ = $1;}
@@ -268,8 +268,8 @@ mutable : ID {$$ = newExpNode(ExpKind::IdK, $1);}
 	| ID '[' exp ']' {}
 	;
 
-immutable : '(' exp ')' {}
-	| call {}
+immutable : '(' exp ')' {$$ = $2;}
+	| call {$$ = $1;}
 	| constant {$$ = $1;}
 	;
 
@@ -321,6 +321,12 @@ void initTokenStrings() {
 	largerTokens[LEQ] = (char *)"<=";
 	largerTokens['>'] = (char *)">";
 	largerTokens['<'] = (char *)"<";
+	largerTokens['*'] = (char *)"*";
+	largerTokens['-'] = (char *)"-";
+	largerTokens['+'] = (char *)"+";
+	largerTokens['/'] = (char *)"/";
+	largerTokens['?'] = (char *)"?";
+	largerTokens['%'] = (char *)"%";
 	largerTokens[EQ] = (char *)"==";
 	largerTokens[NEQ] = (char *)"!=";
 	largerTokens[MAX] = (char *)":>:";

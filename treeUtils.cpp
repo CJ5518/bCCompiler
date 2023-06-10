@@ -68,7 +68,7 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0L, TreeNode *c1
 		newNode->attr.string = token->svalue;
 		newNode->attr.cvalue = token->cvalue;
 	}
-	
+
 	newNode->attr.op = OpKind(token->tokenclass);
 
 	//Gonna do some string compare shit
@@ -208,7 +208,17 @@ void printTreeNode(FILE *listing,
 			fprintf(listing, "Assign: %s", tokenToStr(tree->attr.op));
 			break;
 		case ExpKind::OpK:
-			fprintf(listing, "Op: %s", tokenToStr(tree->attr.op));
+			//If this is the '-'
+			if (tokenToStr(tree->attr.op)[0] == '-' && tokenToStr(tree->attr.op)[1] == 0) {
+				//Check if unary op (unary should have only one child)
+				if (tree->child[1]) {
+					fprintf(listing, "Op: -");
+				} else {
+					fprintf(listing, "Op: chsign");
+				}
+			} else {
+				fprintf(listing, "Op: %s", tokenToStr(tree->attr.op));
+			}
 			break;
 		case ExpKind::ConstantK:
 				switch (tree->type) {
