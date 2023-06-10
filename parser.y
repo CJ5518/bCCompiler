@@ -309,9 +309,12 @@ void initTokenStrings() {
 	for (int q = 0; q < 512; q++) {
 		largerTokens[q] = (char*)defaultMessage;
 	}
-    largerTokens[ADDASS] = (char *)"+=";
-    largerTokens[AND] = (char *)"and";
-    largerTokens[BOOL] = (char *)"bool";
+	largerTokens[ADDASS] = (char *)"+=";
+	largerTokens[SUBASS] = (char *)"-=";
+	largerTokens[MULASS] = (char *)"*=";
+	largerTokens[DIVASS] = (char *)"/=";
+	largerTokens[AND] = (char *)"and";
+	largerTokens[BOOL] = (char *)"bool";
 }
 
 int main(int argc, char **argv) {
