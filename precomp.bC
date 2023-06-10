@@ -3,11 +3,29 @@
 main()
 {
 	bool c:true;
+	int a:3;
+	//assignop
+	a /= 1;
+	a *= 1;
+	a += 1;
+	a -= 1;
+	a = 1;
 	//simple expr
 	c = c or c;
 	//and exp
-	//c = c and c;
+	c = c and c;
 	//unaryRelExp
-	//c = not c;
-	
+	c = not c;
+	c = a == a;
+	c = a !=  a;
+	c = a <= a;
+	c = a <  a;
+	c = a >= a;
+	c = a >  a;
+	c = a <= a;
+	c = a <  a;
+	c = a >= a;
+	c = a > a;
+	a = a :>: a;
+	a = a :<: a;
 }

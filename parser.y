@@ -73,11 +73,11 @@ TreeNode* syntaxTree;
 %token <tokenData> BOOLCONST STATIC OR BOOL BREAK BY CHAR AND CHARCONST COMMENT NOT WHILE
 %token <tokenData> EQ GEQ LEQ DEC DIVASS SUBASS ADDASS INC MULASS NEQ MAX MIN STRINGCONST
 %token <tokenData> '*' '+' '{' '}' '[' ']' ';' '-' '>' '<' '=' ':' ',' '/' '(' ')' '%' '?'
-%type <tokenData> term assignop
+%type <tokenData> term assignop relop mulop minmaxop
 %type <tree> program precomList declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId funDecl parms parmList parmTypeList
 %type <tree> parmIdList parmId stmt matched iterRange unmatched expstmt compoundstmt localDecls stmtList returnstmt breakstmt
-%type <tree> exp simpleExp andExp unaryRelExp relExp relop minmaxExp
-%type <tree> minmaxop sumExp sumop mulExp mulop unaryExp unaryop factor mutable
+%type <tree> exp simpleExp andExp unaryRelExp relExp minmaxExp
+%type <tree> sumExp sumop mulExp unaryExp unaryop factor mutable
 %type <type> typeSpec
 %type <tree> immutable call args argList constant
 %%
@@ -206,32 +206,32 @@ simpleExp : simpleExp OR andExp {$$ = newExpNode(ExpKind::OpK, $2, $1, $3);}
 	| andExp {$$ = $1;}
 	;
 
-andExp : andExp AND unaryRelExp {}
+andExp : andExp AND unaryRelExp {$$ = newExpNode(ExpKind::OpK, $2, $1, $3);}
 	| unaryRelExp {$$ = $1;}
 	;
 
-unaryRelExp : NOT unaryRelExp {}
+unaryRelExp : NOT unaryRelExp {$$ = newExpNode(ExpKind::OpK, $1, $2);}
 	| relExp {$$ = $1;}
 	;
 
-relExp : minmaxExp relop minmaxExp {}
+relExp : minmaxExp relop minmaxExp {$$ = newExpNode(ExpKind::OpK, $2, $1, $3);}
 	| minmaxExp {$$ = $1;}
 	;
 
-relop : LEQ {}
-	| '>' {}
-	| '<' {}
-	| GEQ {}
-	| EQ {}
-	| NEQ {}
+relop : LEQ {$$ = $1;}
+	| '>' {$$ = $1;}
+	| '<' {$$ = $1;}
+	| GEQ {$$ = $1;}
+	| EQ {$$ = $1;}
+	| NEQ {$$ = $1;}
 	;
 
-minmaxExp : minmaxExp minmaxop sumExp {}
+minmaxExp : minmaxExp minmaxop sumExp {$$ = newExpNode(ExpKind::OpK, $2, $1, $3);}
 	| sumExp {$$ = $1;}
 	;
 
-minmaxop : MAX {}
-	| MIN {}
+minmaxop : MAX {$$ = $1;}
+	| MIN {$$ = $1;}
 	;
 
 sumExp : sumExp sumop mulExp {}
@@ -316,7 +316,17 @@ void initTokenStrings() {
 	largerTokens[AND] = (char *)"and";
 	largerTokens[BOOL] = (char *)"bool";
 	largerTokens[OR] = (char *)"or";
+	largerTokens[NOT] = (char *)"not";
+	largerTokens[GEQ] = (char *)">=";
+	largerTokens[LEQ] = (char *)"<=";
+	largerTokens['>'] = (char *)">";
+	largerTokens['<'] = (char *)"<";
+	largerTokens[EQ] = (char *)"==";
+	largerTokens[NEQ] = (char *)"!=";
+	largerTokens[MAX] = (char *)":>:";
+	largerTokens[MIN] = (char *)":<:";
 }
+
 
 int main(int argc, char **argv) {
 	initTokenStrings();
