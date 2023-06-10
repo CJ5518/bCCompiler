@@ -68,10 +68,8 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0L, TreeNode *c1
 		newNode->attr.string = token->svalue;
 		newNode->attr.cvalue = token->cvalue;
 	}
-
-	if (kind == ExpKind::AssignK) {
-		newNode->attr.op = OpKind(token->tokenclass);
-	}
+	
+	newNode->attr.op = OpKind(token->tokenclass);
 
 	//Gonna do some string compare shit
 	//Make OpType an actual enum class

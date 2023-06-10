@@ -202,7 +202,7 @@ assignop : '=' {$$ = $1;}
 	| DIVASS {$$ = $1;}
 	;
 
-simpleExp : simpleExp OR andExp {}
+simpleExp : simpleExp OR andExp {$$ = newExpNode(ExpKind::OpK, $2, $1, $3);}
 	| andExp {$$ = $1;}
 	;
 
@@ -238,7 +238,7 @@ sumExp : sumExp sumop mulExp {}
 	| mulExp {$$ = $1;}
 	;
 
-sumop : '+' {}
+sumop : '+' {$$ = newExpNode(ExpKind::OpK, $1);}
 	| '-' {}
 	;
 
@@ -315,6 +315,7 @@ void initTokenStrings() {
 	largerTokens[DIVASS] = (char *)"/=";
 	largerTokens[AND] = (char *)"and";
 	largerTokens[BOOL] = (char *)"bool";
+	largerTokens[OR] = (char *)"or";
 }
 
 int main(int argc, char **argv) {

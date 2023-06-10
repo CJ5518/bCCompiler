@@ -2,9 +2,12 @@
 
 main()
 {
-	int a:3;
 	bool c:true;
-	a = 3;
-	c = false;
+	//simple expr
+	c = c or c;
+	//and exp
+	//c = c and c;
+	//unaryRelExp
+	//c = not c;
 	
 }
