@@ -148,22 +148,22 @@ stmt : matched {$$ = $1;}
 	| unmatched {$$ = $1;}
 	;
 
-matched : IF simpleExp THEN matched ELSE matched {}
-	| WHILE simpleExp DO matched {}
-	| FOR ID '=' iterRange DO matched {}
+matched : IF simpleExp THEN matched ELSE matched {$$ = newStmtNode(StmtKind::IfK, $1, $2, $4, $6);}
+	| WHILE simpleExp DO matched {$$ = newStmtNode(StmtKind::WhileK, $1, $2, $4);}
+	| FOR ID '=' iterRange DO matched {$$ = newStmtNode(StmtKind::ForK, $1, newDeclNode(DeclKind::VarK, ExpType::Integer, $2), $4, $6);}
 	| expstmt {$$ = $1;}
 	| compoundstmt {$$ = $1;}
 	| returnstmt {$$ = $1;}
 	| breakstmt {$$ = $1;}
 	;
 
-iterRange : simpleExp TO simpleExp {}
-	| simpleExp TO simpleExp BY simpleExp {}
+iterRange : simpleExp TO simpleExp {$$ = newStmtNode(StmtKind::RangeK, $2, $1, $3);}
+	| simpleExp TO simpleExp BY simpleExp {$$ = newStmtNode(StmtKind::RangeK, $2, $1, $3, $5);}
 	;
 
-unmatched : IF simpleExp THEN stmt {}
-	| IF simpleExp THEN matched ELSE unmatched {}
-	| WHILE simpleExp DO unmatched {}
+unmatched : IF simpleExp THEN stmt {$$ = newStmtNode(StmtKind::IfK, $1, $2, $4);}
+	| IF simpleExp THEN matched ELSE unmatched {$$ = newStmtNode(StmtKind::IfK, $1, $2, $4, $6);}
+	| WHILE simpleExp DO unmatched {$$ = newStmtNode(StmtKind::WhileK, $1, $2, $4);}
 	| FOR ID '=' iterRange DO unmatched {}
 	;
 

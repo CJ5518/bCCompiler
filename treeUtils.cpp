@@ -92,36 +92,49 @@ const char *tokenToStr(int type) {
 		return largerTokens[type];
 	}
 }
+
+const char* expTypeToStrFULL(ExpType type) {
+	switch (type) {
+		case ExpType::Boolean:
+		return "static array of type bool";
+		case ExpType::Char:
+		return "static array of type char";
+		case ExpType::Integer:
+		return "static array of type int";
+		case ExpType::UndefinedType:
+		return "static array of type UNDEFINED";
+		case ExpType::Void:
+		return "static array of type void";
+		default: 
+		return "static array of BAD EXP TYPE";
+	}
+}
+
 const char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {
-	if (isArray) {
-		switch (type) {
-			case ExpType::Boolean:
-			return "array of type bool";
-			case ExpType::Char:
-			return "array of type char";
-			case ExpType::Integer:
-			return "array of type int";
-			case ExpType::UndefinedType:
-			return "array of type UNDEFINED";
-			case ExpType::Void:
-			return "array of type void";
-			default: 
-			return "array of BAD EXP TYPE";
+	if (isArray) { //true, true
+		if (isStatic) {
+			return expTypeToStrFULL(type);
+		} else { //true, false
+			return &expTypeToStrFULL(type)[7];
 		}
-	} else {
-		switch (type) {
-			case ExpType::Boolean:
-			return "type bool";
-			case ExpType::Char:
-			return "type char";
-			case ExpType::Integer:
-			return "type int";
-			case ExpType::UndefinedType:
-			return "type UNDEFINED";
-			case ExpType::Void:
-			return "type void";
-			default: 
-			return "BAD EXP TYPE";
+	} else { //false, true
+		if (isStatic) {
+			switch (type) {
+				case ExpType::Boolean:
+				return "static type bool";
+				case ExpType::Char:
+				return "static type char";
+				case ExpType::Integer:
+				return "static type int";
+				case ExpType::UndefinedType:
+				return "static type UNDEFINED";
+				case ExpType::Void:
+				return "static type void";
+				default: 
+				return "static BAD EXP TYPE";
+			}
+		} else { //false, false
+			return &expTypeToStrFULL(type)[16];
 		}
 	}
 }
@@ -265,7 +278,10 @@ void printTreeNode(FILE *listing,
 						}
 						printf("\"");
 					}
-		else fprintf(listing, "Const '%c'", tree->attr.cvalue);
+					else fprintf(listing, "Const '%c'", tree->attr.cvalue);
+					break;
+				case ExpType::String:
+					fprintf(listing, "Const %s", tree->attr.string);
 					break;
 				case ExpType::Void:
 				case ExpType::UndefinedType:
