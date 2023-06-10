@@ -30,7 +30,6 @@ TreeNode* cloneNode(TreeNode* oldNode) {
 TreeNode* newGenericNode(TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2) {
 	TreeNode* newNode = allocNode();
 	newNode->lineno = token->linenum;
-	newNode->attr.op = token->tokenclass;
 	
 	newNode->child[0] = c0;
 	newNode->child[1] = c1;
@@ -70,17 +69,25 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0L, TreeNode *c1
 		newNode->attr.cvalue = token->cvalue;
 	}
 
+	if (kind == ExpKind::AssignK) {
+		newNode->attr.op = OpKind(token->tokenclass);
+	}
+
 	//Gonna do some string compare shit
 	//Make OpType an actual enum class
 
 	return newNode;
 }
+
+
+extern char* largerTokens[500];
+
 const char *tokenToStr(int type) {
 	switch (type) {
 		case '=':
 		return "=";
 		default: 
-		return "Token to Str has not been finished, time to do that";
+		return largerTokens[type];
 	}
 }
 const char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {

@@ -73,10 +73,10 @@ TreeNode* syntaxTree;
 %token <tokenData> BOOLCONST STATIC OR BOOL BREAK BY CHAR AND CHARCONST COMMENT NOT WHILE
 %token <tokenData> EQ GEQ LEQ DEC DIVASS SUBASS ADDASS INC MULASS NEQ MAX MIN STRINGCONST
 %token <tokenData> '*' '+' '{' '}' '[' ']' ';' '-' '>' '<' '=' ':' ',' '/' '(' ')' '%' '?'
-%type <tokenData> term
+%type <tokenData> term assignop
 %type <tree> program precomList declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId funDecl parms parmList parmTypeList
 %type <tree> parmIdList parmId stmt matched iterRange unmatched expstmt compoundstmt localDecls stmtList returnstmt breakstmt
-%type <tree> exp assignop simpleExp andExp unaryRelExp relExp relop minmaxExp
+%type <tree> exp simpleExp andExp unaryRelExp relExp relop minmaxExp
 %type <tree> minmaxop sumExp sumop mulExp mulop unaryExp unaryop factor mutable
 %type <type> typeSpec
 %type <tree> immutable call args argList constant
@@ -188,18 +188,18 @@ returnstmt : RETURN ';' {}
 breakstmt : BREAK ';' {}
 	;
 
-exp : mutable assignop exp {$$ = $2; $$->child[0] = $1; $$->child[1] = $3;}
+exp : mutable assignop exp {$$ = newExpNode(ExpKind::AssignK, $2, $1, $3);}
 	| mutable INC {}
 	| mutable DEC {}
 	| simpleExp {$$ = $1;}
 	| mutable assignop error {}
 	;
 
-assignop : '=' {$$ = newExpNode(ExpKind::AssignK, $1);}
-	| ADDASS {$$ = newExpNode(ExpKind::AssignK, $1);}
-	| SUBASS {$$ = newExpNode(ExpKind::AssignK, $1);}
-	| MULASS {$$ = newExpNode(ExpKind::AssignK, $1);}
-	| DIVASS {$$ = newExpNode(ExpKind::AssignK, $1);}
+assignop : '=' {$$ = $1;}
+	| ADDASS {$$ = $1;}
+	| SUBASS {$$ = $1;}
+	| MULASS {$$ = $1;}
+	| DIVASS {$$ = $1;}
 	;
 
 simpleExp : simpleExp OR andExp {}
@@ -301,7 +301,21 @@ void yyerror (const char *msg)
 	cout << "Error: " <<  msg << endl;
 }
 
+//Token thingy for some of the weirder tokens
+char *largerTokens[512];
+
+void initTokenStrings() {
+	const char* defaultMessage = "Unknown (or more likely unimplemented) largerTokens";
+	for (int q = 0; q < 512; q++) {
+		largerTokens[q] = (char*)defaultMessage;
+	}
+    largerTokens[ADDASS] = (char *)"+=";
+    largerTokens[AND] = (char *)"and";
+    largerTokens[BOOL] = (char *)"bool";
+}
+
 int main(int argc, char **argv) {
+	initTokenStrings();
 	yylval.tokenData = (TokenData*)malloc(sizeof(TokenData));
 	yylval.tree = (TreeNode*)malloc(sizeof(TreeNode));
 	yylval.tokenData->linenum = 1;
