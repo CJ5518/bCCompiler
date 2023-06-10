@@ -10,7 +10,7 @@ LIBS = -lm
 $(BIN): $(OBJS)
 	$(CC) $(CCFLAGS) $(OBJS) $(LIBS) -o $(BIN)
 
-parser.tab.h parser.tab.c: parser.y scanType.h treeUtils.h
+parser.tab.h parser.tab.c: parser.y scanType.h treeUtils.h treeUtils.cpp treeNodes.h
 	bison -v -t -d --debug parser.y
 
 lex.yy.c: parser.l parser.tab.h scanType.h
