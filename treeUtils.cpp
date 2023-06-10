@@ -237,6 +237,13 @@ void printTreeNode(FILE *listing,
 				} else {
 					fprintf(listing, "Op: chsign");
 				}
+				//If this is the other special case unary operator
+			} else if (tokenToStr(tree->attr.op)[0] == '*' && tokenToStr(tree->attr.op)[1] == 0){
+				if (tree->child[1]) {
+					fprintf(listing, "Op: *");
+				} else {
+					fprintf(listing, "Op: sizeof");
+				}
 			} else {
 				fprintf(listing, "Op: %s", tokenToStr(tree->attr.op));
 			}
