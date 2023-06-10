@@ -1,5 +1,10 @@
 #DRBC this is a precompiler message
 
+int foo() {
+
+	return 3;
+}
+
 main()
 {
 	int a:3;
@@ -42,4 +47,6 @@ main()
 	//sum op and sum exp
 	a+a;
 	a-a;
+
+	foo();
 }

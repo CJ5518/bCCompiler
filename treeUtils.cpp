@@ -30,6 +30,8 @@ TreeNode* cloneNode(TreeNode* oldNode) {
 TreeNode* newGenericNode(TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2) {
 	TreeNode* newNode = allocNode();
 	newNode->lineno = token->linenum;
+	newNode->attr.name = token->svalue;
+
 	
 	newNode->child[0] = c0;
 	newNode->child[1] = c1;
@@ -43,7 +45,6 @@ TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c
 	TreeNode* newNode = newGenericNode(token, c0, c1, c2);
 	newNode->nodekind = NodeKind::DeclK;
 	newNode->kind.decl = kind;
-	newNode->attr.name = token->svalue;
 	newNode->type = type;
 	
 	return newNode;

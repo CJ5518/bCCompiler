@@ -181,11 +181,11 @@ stmtList : stmtList stmt {$$ = addSibling($1, $2);}
 	| /* empty */ {$$ = NULL;}
 	;
 
-returnstmt : RETURN ';' {}
-	| RETURN exp ';' {}
+returnstmt : RETURN ';' {$$ = newStmtNode(StmtKind::ReturnK, $1);}
+	| RETURN exp ';' {$$ = newStmtNode(StmtKind::ReturnK, $1, $2);}
 	;
 
-breakstmt : BREAK ';' {}
+breakstmt : BREAK ';' {$$ = newStmtNode(StmtKind::BreakK, $1);}
 	;
 
 exp : mutable assignop exp {$$ = newExpNode(ExpKind::AssignK, $2, $1, $3);}
@@ -273,7 +273,7 @@ immutable : '(' exp ')' {$$ = $2;}
 	| constant {$$ = $1;}
 	;
 
-call : ID '(' args ')' {}
+call : ID '(' args ')' {$$ = newExpNode(ExpKind::CallK, $1, $3);}
 	;
 
 args : argList {$$ = $1;}
