@@ -30,7 +30,7 @@ enum class ExpKind {AssignK, CallK, ConstantK, IdK, OpK};
 // =====
 
 // Type of variables
-enum class ExpType {Void, Integer, Boolean, Char, UndefinedType};
+enum class ExpType {Void, Integer, Boolean, Char, String, UndefinedType};
 
 // expected types for operator: 3 unary + 4 binary
 enum class ExpectType {OneInt, OneBool, OneArray, IntInt, BoolBool, Equal, ArrayInt};

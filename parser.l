@@ -9,7 +9,7 @@
 char *lastToken = (char*)"";
 int lineNum = 1;
 
-int setValue(int linenum, int tokenClass, char *svalue) {
+int setValue(int linenum, int tokenClass, char *svalue, int overwriteVal=-1) {
 	yylval.tokenData = new TokenData;
 	yylval.tokenData->tokenclass = tokenClass;
 	yylval.tokenData->linenum = linenum;
@@ -17,6 +17,10 @@ int setValue(int linenum, int tokenClass, char *svalue) {
 	yylval.tokenData->cvalue = svalue[0];
 	//May cause overflow error
 	yylval.tokenData->nvalue = atoi(svalue);
+	//Used with bool
+	if (overwriteVal>=0) {
+		yylval.tokenData->nvalue = overwriteVal;
+	}
 	yylval.tokenData->svalue = strdup(svalue);
 	return tokenClass;
 }
@@ -63,7 +67,8 @@ whitespace  [\ \t]
 "!="      { return setValue(lineNum, NEQ, yytext); }
 ":>:"      { return setValue(lineNum, MAX, yytext); }
 ":<:"      { return setValue(lineNum, MIN, yytext); }
-true|false { return setValue(lineNum, BOOLCONST, yytext); }
+"true"	{ return setValue(lineNum, BOOLCONST, yytext, 1); }
+"false" { return setValue(lineNum, BOOLCONST, yytext, 0); }
 "static" { return setValue(lineNum, STATIC, yytext); }
 
 \/\/.* { }

@@ -93,7 +93,7 @@ const char *tokenToStr(int type) {
 const char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {
 	switch (type) {
 		case ExpType::Boolean:
-		return "boolean";
+		return "bool";
 		case ExpType::Char:
 		return "char";
 		case ExpType::Integer:

@@ -109,7 +109,7 @@ varDeclList : varDeclList ',' varDeclInit {$$ = $1; addSibling($1, $3);}
 	;
 
 varDeclInit : varDeclId {$$ = $1;}
-	| varDeclId ':' simpleExp {}
+	| varDeclId ':' simpleExp {$$ = $1; $$->child[0] = $3;}
 	;
 
 varDeclId : ID {$$ = newDeclNode(DeclKind::VarK, ExpType::UndefinedType, $1);}
@@ -285,9 +285,9 @@ argList : argList ',' exp {$$ = addSibling($1, $3);}
 	;
 
 constant : NUMCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Integer;}
-	| CHARCONST {$$ = newExpNode(ExpKind::ConstantK, $1);}
-	| STRINGCONST {$$ = newExpNode(ExpKind::ConstantK, $1);}
-	| BOOLCONST {$$ = newExpNode(ExpKind::ConstantK, $1);}
+	| CHARCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Char;}
+	| STRINGCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::String;}
+	| BOOLCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Boolean;}
 	;
 
 
