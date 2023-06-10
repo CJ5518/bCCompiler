@@ -1,6 +1,6 @@
 #DRBC this is a precompiler message
 
-int foo() {
+int foo(int a, b[]; bool c, d; int e; char f) {
 
 	return 3;
 }
@@ -43,8 +43,6 @@ main()
 	{a++; b[1]--;}
 	//call, immutable, factor
 	main();
-	//Call with args, arglist, also constant
-	foo(1, b, true, false, 123, 'f');
 	//unary exp and unary op
 	*b;
 	?a;
@@ -57,4 +55,6 @@ main()
 	a+a;
 	a-a;
 	b[1]--;
+	//Call with args, arglist, also constant
+	foo(1, b, true, false, 123, 'f');
 }
