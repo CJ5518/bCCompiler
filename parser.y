@@ -189,8 +189,8 @@ breakstmt : BREAK ';' {$$ = newStmtNode(StmtKind::BreakK, $1);}
 	;
 
 exp : mutable assignop exp {$$ = newExpNode(ExpKind::AssignK, $2, $1, $3);}
-	| mutable INC {}
-	| mutable DEC {}
+	| mutable INC {$$ = newExpNode(ExpKind::AssignK, $2, $1);}
+	| mutable DEC {$$ = newExpNode(ExpKind::AssignK, $2, $1);}
 	| simpleExp {$$ = $1;}
 	| mutable assignop error {}
 	;
@@ -265,7 +265,7 @@ factor : immutable {$$ = $1;}
 	;
 
 mutable : ID {$$ = newExpNode(ExpKind::IdK, $1);}
-	| ID '[' exp ']' {}
+	| ID '[' exp ']' {$$ = newExpNode(ExpKind::OpK, $2, newExpNode(ExpKind::IdK, $1), $3);}
 	;
 
 immutable : '(' exp ')' {$$ = $2;}
@@ -331,6 +331,9 @@ void initTokenStrings() {
 	largerTokens[NEQ] = (char *)"!=";
 	largerTokens[MAX] = (char *)":>:";
 	largerTokens[MIN] = (char *)":<:";
+	largerTokens[INC] = (char *)"++";
+	largerTokens[DEC] = (char *)"--";
+	largerTokens['['] = (char *)"[";
 }
 
 
