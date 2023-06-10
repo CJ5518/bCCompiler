@@ -113,7 +113,7 @@ varDeclInit : varDeclId {$$ = $1;}
 	;
 
 varDeclId : ID {$$ = newDeclNode(DeclKind::VarK, ExpType::UndefinedType, $1);}
-	| ID '[' NUMCONST ']' {}
+	| ID '[' NUMCONST ']' {$$ = newDeclNode(DeclKind::VarK, ExpType::UndefinedType, $1); $$->isArray = true; $$->size = $3->nvalue;}
 	;
 
 typeSpec : INT {$$ = ExpType::Integer;}

@@ -1,5 +1,6 @@
 #include <treeUtils.h>
 #include <stdlib.h>
+#include <string>
 
 
 TreeNode* allocNode() {
@@ -31,6 +32,8 @@ TreeNode* newGenericNode(TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode 
 	TreeNode* newNode = allocNode();
 	newNode->lineno = token->linenum;
 	newNode->attr.name = token->svalue;
+
+	newNode->isArray = false;
 
 	
 	newNode->child[0] = c0;
@@ -90,19 +93,36 @@ const char *tokenToStr(int type) {
 	}
 }
 const char *expTypeToStr(ExpType type, bool isArray, bool isStatic) {
-	switch (type) {
-		case ExpType::Boolean:
-		return "bool";
-		case ExpType::Char:
-		return "char";
-		case ExpType::Integer:
-		return "int";
-		case ExpType::UndefinedType:
-		return "UNDEFINED";
-		case ExpType::Void:
-		return "void";
-		default: 
-		return "BAD EXP TYPE";
+	if (isArray) {
+		switch (type) {
+			case ExpType::Boolean:
+			return "array of type bool";
+			case ExpType::Char:
+			return "array of type char";
+			case ExpType::Integer:
+			return "array of type int";
+			case ExpType::UndefinedType:
+			return "array of type UNDEFINED";
+			case ExpType::Void:
+			return "array of type void";
+			default: 
+			return "array of BAD EXP TYPE";
+		}
+	} else {
+		switch (type) {
+			case ExpType::Boolean:
+			return "type bool";
+			case ExpType::Char:
+			return "type char";
+			case ExpType::Integer:
+			return "type int";
+			case ExpType::UndefinedType:
+			return "type UNDEFINED";
+			case ExpType::Void:
+			return "type void";
+			default: 
+			return "BAD EXP TYPE";
+		}
 	}
 }
 
@@ -138,7 +158,7 @@ void printTreeNode(FILE *listing,
    switch (tree->kind.decl) {
    case DeclKind::VarK:
 			printf("Var: %s ", tree->attr.name);
-			printf("of type %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
+			printf("of %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
 			if (showAllocation) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
@@ -146,14 +166,14 @@ void printTreeNode(FILE *listing,
    case DeclKind::FuncK:
 			printf("Func: %s ", tree->attr.name);
 			//EDITED
-			printf("returns type %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
+			printf("returns %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
 			if (showAllocation) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
 	   break;
    case DeclKind::ParamK:
 			printf("Parm: %s ", tree->attr.name);
-			printf("of type %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
+			printf("of %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
 			if (showAllocation) {
 				printf(" [mem: %s loc: %d size: %d]", varKindToStr(tree->varKind), tree->offset, tree->size);
 			}
@@ -257,7 +277,7 @@ void printTreeNode(FILE *listing,
 			break;
 		}
 		if (showExpType) {
-			fprintf(listing, " of type %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
+			fprintf(listing, " of %s", expTypeToStr(tree->type, tree->isArray, tree->isStatic));
 		}
 		if (showAllocation) {
 			if (tree->kind.exp == ExpKind::IdK || tree->kind.exp == ExpKind::ConstantK && tree->type == ExpType::Char && tree->isArray) {

@@ -8,45 +8,9 @@ int foo() {
 main()
 {
 	int a:3;
+	int b[4];
 	bool c:false;
 	//assignop
 	a /= 1;
-	a *= 1;
-	a += 1;
-	a -= 1;
-	a = 1;
-	//simple expr
-	c = c or c;
-	//and exp
-	c = c and c;
-	//unaryRelExp
-	c = not c;
-	//relop and rel exp
-	c = a == a;
-	c = a !=  a;
-	c = a <= a;
-	c = a <  a;
-	c = a >= a;
-	c = a >  a;
-	c = a <= a;
-	c = a <  a;
-	c = a >= a;
-	c = a > a;
-	//minmax expression
-	a = a :>: a;
-	a = a :<: a;
-	//expstmt
-	a;
-	//unary exp and unary op
-	?a;
-	-a;
-	//mul exp and mul op
-	a*a;
-	a/a;
-	a%a;
-	//sum op and sum exp
-	a+a;
-	a-a;
-
-	foo();
+	*b;
 }
