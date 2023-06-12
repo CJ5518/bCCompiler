@@ -164,13 +164,14 @@ iterRange : simpleExp TO simpleExp {$$ = newStmtNode(StmtKind::RangeK, $2, $1, $
 unmatched : IF simpleExp THEN stmt {$$ = newStmtNode(StmtKind::IfK, $1, $2, $4);}
 	| IF simpleExp THEN matched ELSE unmatched {$$ = newStmtNode(StmtKind::IfK, $1, $2, $4, $6);}
 	| WHILE simpleExp DO unmatched {$$ = newStmtNode(StmtKind::WhileK, $1, $2, $4);}
-	| FOR ID '=' iterRange DO unmatched {}
+	| FOR ID '=' iterRange DO unmatched {$$ = newStmtNode(StmtKind::ForK, $1, newDeclNode(DeclKind::VarK, ExpType::Integer, $2), $4, $6);}
 	;
 
 expstmt : exp ';' {$$ = $1;}
 	;
 
 compoundstmt : '{' localDecls stmtList '}' {$$ = newStmtNode(StmtKind::CompoundK, $1, $2, $3);}
+	| '{' localDecls stmtList '}' ';' {$$ = newStmtNode(StmtKind::CompoundK, $1, $2, $3);}
 	;
 
 localDecls : localDecls scopedVarDecl {$$ = addSibling($1, $2);}
@@ -293,7 +294,7 @@ constant : NUMCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType
 
 term  :
 	  ERROR    {cout << "ERROR(" << yylval.tinfo.linenum << "): Invalid or misplaced input character: '" << yylval.tinfo.tokenstr << "'. Character Ignored.\n";}
-	  COMMENT {}
+	|  COMMENT {}
 	;
 %%
 void yyerror (const char *msg)
