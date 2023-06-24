@@ -1,11 +1,24 @@
-#DRBC All production rules Full test
+// C-S21
+int aaa;
+bool bbb;
+int ccc[10];
+bool ddd[10];
 
+main();
 
-main()
+int dogs(int eee; bool fff; int ggg[]; bool hhh[])
 {
-}
+    int aaa;
+    bool bbb;
+    int ccc[10];
+    bool ddd[10];
 
-int bar(int x, b[]; bool y, d; int e; char f)
-{
-   x;
+    static int saaa;
+    static bool sbbb;
+    static int sccc[10];
+    static bool sddd[10];
+
+
+
+    return aaa;
 }

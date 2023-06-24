@@ -18,7 +18,13 @@ int setValue(int linenum, int tokenClass, char *svalue, int overwriteVal=-1) {
 
 	if (tokenClass == CHARCONST && svalue[1] == '\\') {
 		yylval.tokenData->cvalue = svalue[2];
+		if (svalue[2] == 'n') {
+			yylval.tokenData->cvalue =  '\n';
+		} else if (svalue[2] == '0') {
+			yylval.tokenData->cvalue =  '\0';
+		}
 	}
+
 	//May cause overflow error
 	yylval.tokenData->nvalue = atoi(svalue);
 	//Used with bool

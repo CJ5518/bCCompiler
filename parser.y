@@ -168,6 +168,7 @@ unmatched : IF simpleExp THEN stmt {$$ = newStmtNode(StmtKind::IfK, $1, $2, $4);
 	;
 
 expstmt : exp ';' {$$ = $1;}
+	| ';' {$$ = NULL;}
 	;
 
 compoundstmt : '{' localDecls stmtList '}' {$$ = newStmtNode(StmtKind::CompoundK, $1, $2, $3);}
