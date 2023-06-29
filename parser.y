@@ -84,7 +84,7 @@ TreeNode* syntaxTree;
 program  :  precomList declList {syntaxTree = $2;}
 	;
 
-precomList : precomList PRECOMPILER {$$ = $1;}
+precomList : precomList PRECOMPILER {printf("%s\n", yylval.tokenData->tokenstr);}
 	| PRECOMPILER {printf("%s\n", yylval.tokenData->tokenstr);}
 	| /*empty*/ {$$ = NULL;}
 	;
@@ -370,7 +370,7 @@ int main(int argc, char **argv) {
 		fclose (yyin);
 	}
 	if (numErrors==0) {
-		printTree(stdout, syntaxTree, false, false);
+		printTree(stdout, syntaxTree, true, false);
 		if(dotAST) {
 			//IMPORTANT - I commented this out
 			//printDotTree(stdout, syntaxTree, false, false);
