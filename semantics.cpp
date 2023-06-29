@@ -96,6 +96,7 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 						//Make sure they are both of the same type, this code has copies, if you edit it please also edit copies
 						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type) {
 							syntaxTree->type = syntaxTree->child[1]->type;
+							syntaxTree->isArray = syntaxTree->child[1]->isArray;
 						} else {
 							printf("SEMANTIC ERROR(%d): '%s' requires operands of same type.\n",
 							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
