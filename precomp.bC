@@ -1,7 +1,9 @@
 #DRBC message
 #DRBC message2
 
-main() {
-    int x[5];
-    x[2] = x[1]+1;
+main()
+{
+        int y[33];
+        *y;
 }
+

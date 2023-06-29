@@ -133,9 +133,11 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					traverse(syntaxTree->child[1], symtab);
 				}
 				switch (syntaxTree->attr.op) {
+					//NON-UNARY LOGIC BLOCK
 					case EQ:
 					case GEQ:
 					case LEQ:
+					case NEQ:
 					case '<':
 					case '>':
 						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type) {
@@ -145,6 +147,9 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
 						}
 					break;
+					//END BLOCK
+
+					//ARRAY INDEX BLOCK
 					case '[':
 						if (syntaxTree->child[0]->isArray) {
 							syntaxTree->type = syntaxTree->child[0]->type;
@@ -152,10 +157,34 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 							printf("CJERROR: trying to index something that isn't an array");
 						}
 					break;
-					case '+':
-					case '-':
-					case '/':
+					//END BLOCK
+
+					//UNARY/NON-UNARY ARITHMETIC BLOCK
 					case '*':
+						//If this is a unary operator
+						if (!syntaxTree->child[1]) {
+							if (syntaxTree->child[0]->isArray) {
+								syntaxTree->type = ExpType::Integer;
+							}
+							break;
+						} else {
+							//otherwise do the same code as the next stuff
+							//so left blank
+						}
+					case '-':
+						//If unary and also not passed through from above
+						if (!syntaxTree->child[1] && syntaxTree->attr.op == '-') {
+							if (syntaxTree->child[0]->type == ExpType::Integer) {
+								syntaxTree->type = ExpType::Integer;
+							}
+							break;
+						} else {
+							//otherwise do the same code as the next stuff
+							//so left blank
+						}
+					case '+':
+					case '%':
+					case '/':
 						//Make sure they are both of the same type, copied
 						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type && syntaxTree->child[0]->type == ExpType::Integer) {
 							syntaxTree->type = syntaxTree->child[1]->type;
@@ -163,6 +192,12 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 							printf("SEMANTIC ERROR(%d): '%s' requires operands of same type (also ints).\n",
 							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
 						}
+					break;
+					//END BLOCK
+
+					//UNARY LOGIC BLOCK
+
+					
 				}
 				break;
 			case ExpKind::IdK:
