@@ -172,8 +172,9 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 							//so left blank
 						}
 					case '-':
-						//If unary and also not passed through from above
-						if (!syntaxTree->child[1] && syntaxTree->attr.op == '-') {
+					case '?':
+						//If unary and also not passed through from the *
+						if (!syntaxTree->child[1] && syntaxTree->attr.op == '-' || syntaxTree->attr.op == '?') {
 							if (syntaxTree->child[0]->type == ExpType::Integer) {
 								syntaxTree->type = ExpType::Integer;
 							}
