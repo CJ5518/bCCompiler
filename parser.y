@@ -306,6 +306,7 @@ void yyerror (const char *msg)
 }
 
 //Token thingy for some of the weirder tokens
+//Mostly made for the printing of the AST
 char *largerTokens[512];
 
 void initTokenStrings() {
