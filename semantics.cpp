@@ -77,7 +77,7 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 	char* id = strdup(syntaxTree->attr.name);
 
 	if (shouldChangeScope(syntaxTree) && !isFuncSpecialCase) {
-		symtab->enter("NewScope");
+		symtab->enter("NewScope from " + (std::string)id);
 	}
 
 	//Expression kind is the important one for the USAGE semantic analysis
@@ -154,7 +154,7 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 						if (syntaxTree->child[0]->isArray) {
 							syntaxTree->type = syntaxTree->child[0]->type;
 						} else {
-							printf("CJERROR: trying to index something that isn't an array");
+							printf("CJERROR(%d): trying to index something that isn't an array\n", syntaxTree->lineno);
 						}
 					break;
 					//END BLOCK
@@ -195,15 +195,33 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					break;
 					//END BLOCK
 
-					//UNARY LOGIC BLOCK
+					//UNARY BOOLEAN ONLY LOGIC BLOCK
+					case NOT:
+						if (syntaxTree->child[0]->type == ExpType::Boolean) {
+							syntaxTree->type = ExpType::Boolean;
+						}
+					break;
+					//END BLOCK
 
-					
+					//NON-UNARY BOOLEAN ONLY LOGIC BLOCK
+					case AND:
+					case OR:
+						//Make sure they are both of the same type, copied
+						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type && syntaxTree->child[0]->type == ExpType::Boolean) {
+							syntaxTree->type = syntaxTree->child[1]->type;
+						} else {
+							printf("SEMANTIC ERROR(%d): '%s' requires operands of same type (also bools).\n",
+							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
+						}
+					break;
+					//END BLOCK
 				}
 				break;
 			case ExpKind::IdK:
 			case ExpKind::CallK:
 				syntaxTree->type = ((TreeNode*)symtab->lookup(id))->type;
 				syntaxTree->isArray = ((TreeNode*)symtab->lookup(id))->isArray;
+				syntaxTree->isStatic = ((TreeNode*)symtab->lookup(id))->isStatic;
 				break;
 			default:
 			break;
@@ -212,11 +230,20 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 
 	//DeclK is important for the symbol table
 	if (syntaxTree->nodekind == NodeKind::DeclK) {
-		if (!symtab->insert(id, (void*)syntaxTree) && syntaxTree->lineno != -1) {
-			//This is the part where an error needs to be thrown if there is a redefinition cjnote
-			printf("SEMANTIC ERROR(%d): Symbol '%s' is already declared at line UNKNOWN.\n", syntaxTree->lineno, id);
-			exit(1);
+		if (syntaxTree->kind.decl == DeclKind::FuncK) {
+			if (!symtab->insertGlobal(id, (void*)syntaxTree) && syntaxTree->lineno != -1) {
+				//This is the part where an error needs to be thrown if there is a redefinition cjnote
+				printf("SEMANTIC ERROR(%d): Symbol '%s' is already declared at line UNKNOWN.\n", syntaxTree->lineno, id);
+				exit(1);
+			}
+		} else {
+			if (!symtab->insert(id, (void*)syntaxTree) && syntaxTree->lineno != -1) {
+				//This is the part where an error needs to be thrown if there is a redefinition cjnote
+				printf("SEMANTIC ERROR(%d): Symbol '%s' is already declared at line UNKNOWN.\n", syntaxTree->lineno, id);
+				exit(1);
+			}
 		}
+
 	}
 
 	traverse(syntaxTree->child[0], symtab);
@@ -228,11 +255,11 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 		syntaxTree->child[1]->kind.stmt == StmtKind::CompoundK
 	);
 	traverse(syntaxTree->child[2], symtab);
-	traverse(syntaxTree->sibling, symtab);
 
 	if (shouldChangeScope(syntaxTree) && !isFuncSpecialCase) {
 		symtab->leave();
 	}
+	traverse(syntaxTree->sibling, symtab);
 }
 
 TreeNode* semanticAnalysis(TreeNode* syntaxTree, bool shareCompoundSpace, bool noDuplicateUndefs, SymbolTable* symtab, int& globalOffset) {

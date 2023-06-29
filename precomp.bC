@@ -1,9 +1,11 @@
-#DRBC message
-#DRBC message2
-
 main()
 {
-        int y[33];
-        *y;
+    output(666);
+    outputb(true);
+    outnl();
+    input();
+    inputb();
+
+    return;
 }
 
