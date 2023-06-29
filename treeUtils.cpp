@@ -30,8 +30,13 @@ TreeNode* cloneNode(TreeNode* oldNode) {
 
 TreeNode* newGenericNode(TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2) {
 	TreeNode* newNode = allocNode();
-	newNode->lineno = token->linenum;
-	newNode->attr.name = token->svalue;
+	//Token is NULL
+	if (!token) {
+		printf("CJERROR: Token passed to newGenericNode is NULL\n");
+	} else {
+		newNode->lineno = token->linenum;
+		newNode->attr.name = token->svalue;
+	}
 
 	newNode->isArray = false;
 
