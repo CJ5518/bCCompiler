@@ -103,6 +103,7 @@ const char* expTypeToStrFULL(ExpType type) {
 		case ExpType::Boolean:
 		return "static array of type bool";
 		case ExpType::Char:
+		case ExpType::String:
 		return "static array of type char";
 		case ExpType::Integer:
 		return "static array of type int";

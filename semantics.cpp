@@ -49,10 +49,10 @@ bool shouldChangeScope(TreeNode* node) {
 			case StmtKind::BreakK:
 			case StmtKind::ReturnK:
 			case StmtKind::RangeK:
-			case StmtKind::ForK:
 			case StmtKind::WhileK:
 			case StmtKind::IfK:
 			break;
+			case StmtKind::ForK:
 			case StmtKind::CompoundK:
 				return true;
 			break;

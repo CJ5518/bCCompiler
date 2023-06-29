@@ -290,7 +290,7 @@ argList : argList ',' exp {$$ = addSibling($1, $3);}
 
 constant : NUMCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Integer;}
 	| CHARCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Char;}
-	| STRINGCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::String;}
+	| STRINGCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::String; $$->isArray=true;}
 	| BOOLCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Boolean;}
 	;
 
