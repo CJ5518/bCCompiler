@@ -7,6 +7,7 @@
 #include "treeUtils.h"
 #include "scanType.h"
 #include "semantics.h"
+#include "symbolTable.h"
 using namespace std;
 
 extern "C" int yylex();
@@ -371,7 +372,9 @@ int main(int argc, char **argv) {
 		fclose (yyin);
 	}
 	if (numErrors==0) {
-		syntaxTree = semanticAnalysis(syntaxTree, true, false, NULL, 0);
+		SymbolTable* symbolTable = new SymbolTable();
+		int globalOffset = 0;
+		syntaxTree = semanticAnalysis(syntaxTree, true, false, symbolTable, globalOffset);
 		printTree(stdout, syntaxTree, true, false);
 		if(dotAST) {
 			//IMPORTANT - I commented this out

@@ -6,6 +6,6 @@ TreeNode* loadIOLib(TreeNode* syntaxTree) {
 	return syntaxTree;
 }
 
-TreeNode* semanticAnalysis(TreeNode* syntaxTree, bool shareCompoundSpace, bool noDuplicateUndefs, SymbolTable* symtab, int globalOffset) {
+TreeNode* semanticAnalysis(TreeNode* syntaxTree, bool shareCompoundSpace, bool noDuplicateUndefs, SymbolTable* symtab, int& globalOffset) {
 	return syntaxTree;
 }

@@ -4,7 +4,7 @@ CC   = g++
 CPPFLAGS = -O0 -g -I./ -std=c++11
 SRCS = parser.y parser.l treeUtils.cpp semantics.cpp symbolTable.cpp
 HDRS = scanType.h treeNodes.h treeUtils.h semantics.h symbolTable.h
-OBJS = lex.yy.o parser.tab.o treeUtils.o semantics.o
+OBJS = lex.yy.o parser.tab.o treeUtils.o semantics.o symbolTable.o
 LIBS = -lm 
 
 $(BIN): $(OBJS)
