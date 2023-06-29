@@ -186,6 +186,8 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					case '+':
 					case '%':
 					case '/':
+					case MIN:
+					case MAX:
 						//Make sure they are both of the same type, copied
 						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type && syntaxTree->child[0]->type == ExpType::Integer) {
 							syntaxTree->type = syntaxTree->child[1]->type;
