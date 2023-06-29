@@ -6,6 +6,7 @@
 #include "treeNodes.h"
 #include "treeUtils.h"
 #include "scanType.h"
+#include "semantics.h"
 using namespace std;
 
 extern "C" int yylex();
@@ -370,6 +371,7 @@ int main(int argc, char **argv) {
 		fclose (yyin);
 	}
 	if (numErrors==0) {
+		syntaxTree = semanticAnalysis(syntaxTree, true, false, NULL, 0);
 		printTree(stdout, syntaxTree, true, false);
 		if(dotAST) {
 			//IMPORTANT - I commented this out
