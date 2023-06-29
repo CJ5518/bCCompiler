@@ -3,6 +3,10 @@
 shopt -s expand_aliases
 source ~/.bash_aliases
 
+if ! ./testSingle.sh precomp.bC; then
+	exit 1
+fi
+
 for filename in /y/shared/Engineering/cs-drbc/cs445/testBroad/*.bC; do
 	printf $filename
 	printf ": "

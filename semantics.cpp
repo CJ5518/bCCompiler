@@ -76,25 +76,109 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 	//Used pretty universally, typicall 'the' id in question
 	char* id = strdup(syntaxTree->attr.name);
 
+	if (shouldChangeScope(syntaxTree) && !isFuncSpecialCase) {
+		symtab->enter("NewScope");
+	}
+
 	//Expression kind is the important one for the USAGE semantic analysis
 	if (syntaxTree->nodekind == NodeKind::ExpK) {
 		switch (syntaxTree->kind.exp) {
+			case ExpKind::AssignK:
+				//Make sure both children have been traversed first
+				if (syntaxTree->child[0] && syntaxTree->child[0]->type == ExpType::Void) {
+					traverse(syntaxTree->child[0], symtab);
+				}
+				if (syntaxTree->child[1] && syntaxTree->child[1]->type == ExpType::Void) {
+					traverse(syntaxTree->child[1], symtab);
+				}
+				switch (syntaxTree->attr.op) {
+					case '=':
+						//Make sure they are both of the same type, this code has copies, if you edit it please also edit copies
+						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type) {
+							syntaxTree->type = syntaxTree->child[1]->type;
+						} else {
+							printf("SEMANTIC ERROR(%d): '%s' requires operands of same type.\n",
+							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
+						}
+						break;
+					case ADDASS:
+					case SUBASS:
+					case MULASS:
+					case DIVASS:
+						//Make sure they are both of the same type, this code has copies, if you edit it please also edit copies
+						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type && syntaxTree->child[0]->type == ExpType::Integer) {
+							syntaxTree->type = syntaxTree->child[1]->type;
+						} else {
+							printf("SEMANTIC ERROR(%d): '%s' requires operands of same type (also ints).\n",
+							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
+						}
+					break;
+					case INC:
+					case DEC:
+						if (syntaxTree->child[0]->type == ExpType::Integer) {
+							syntaxTree->type = ExpType::Integer;
+						} else {
+							printf("SEMANTIC ERROR(%d): '%s' requires operands of type int.\n",
+							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
+						}
+					break;
+				}
+				break;
+			case ExpKind::OpK:
+				//Make sure both children have been traversed first, copied from above
+				if (syntaxTree->child[0] && syntaxTree->child[0]->type == ExpType::Void) {
+					traverse(syntaxTree->child[0], symtab);
+				}
+				if (syntaxTree->child[1] && syntaxTree->child[1]->type == ExpType::Void) {
+					traverse(syntaxTree->child[1], symtab);
+				}
+				switch (syntaxTree->attr.op) {
+					case EQ:
+					case GEQ:
+					case LEQ:
+					case '<':
+					case '>':
+						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type) {
+							syntaxTree->type = ExpType::Boolean;
+						} else {
+							printf("SEMANTIC ERROR(%d): '%s' requires operands of same type.\n",
+							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
+						}
+					break;
+					case '[':
+						if (syntaxTree->child[0]->isArray) {
+							syntaxTree->type = syntaxTree->child[0]->type;
+						} else {
+							printf("CJERROR: trying to index something that isn't an array");
+						}
+					break;
+					case '+':
+					case '-':
+					case '/':
+					case '*':
+						//Make sure they are both of the same type, copied
+						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type && syntaxTree->child[0]->type == ExpType::Integer) {
+							syntaxTree->type = syntaxTree->child[1]->type;
+						} else {
+							printf("SEMANTIC ERROR(%d): '%s' requires operands of same type (also ints).\n",
+							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
+						}
+				}
+				break;
+			case ExpKind::IdK:
 			case ExpKind::CallK:
 				syntaxTree->type = ((TreeNode*)symtab->lookup(id))->type;
+				syntaxTree->isArray = ((TreeNode*)symtab->lookup(id))->isArray;
 				break;
 			default:
 			break;
 		}
 	}
 
-	if (shouldChangeScope(syntaxTree) && !isFuncSpecialCase) {
-		symtab->enter("NewScope");
-	}
-
 	//DeclK is important for the symbol table
 	if (syntaxTree->nodekind == NodeKind::DeclK) {
 		if (!symtab->insert(id, (void*)syntaxTree) && syntaxTree->lineno != -1) {
-			//This is the part where an error needs to be thrown if there is a redefinition
+			//This is the part where an error needs to be thrown if there is a redefinition cjnote
 			printf("SEMANTIC ERROR(%d): Symbol '%s' is already declared at line UNKNOWN.\n", syntaxTree->lineno, id);
 			exit(1);
 		}

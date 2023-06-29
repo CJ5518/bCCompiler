@@ -2,6 +2,6 @@
 #DRBC message2
 
 main() {
-    int x;
-    x = 3;
+    int x[5];
+    x[2] = x[1]+1;
 }
