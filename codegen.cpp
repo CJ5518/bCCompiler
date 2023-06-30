@@ -3,8 +3,30 @@
 
 void outputHeader(char* srcFile);
 
+int instructionCount = 38;
+
+
+void traverse(FILE* out, TreeNode* node, SymbolTable* symtab) {
+	switch (node->nodekind) {
+		case NodeKind::DeclK:
+			switch (node->kind.decl) {
+				case DeclKind::FuncK:
+					emitLongComment();
+					emitComment("FUNCTION", node->attr.name);
+					emitComment("TOFF set:", "UNKNOWN");
+					//Do some other stuff
+					emitStandardClosing();
+			}
+	}
+}
+
 void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* symtab, int globalOffset, bool linenumFlagIn) {
 	outputHeader(srcFile);
+	//Skip past the IO nodes
+	for (int q = 0; q < 7; q++) {
+		syntaxTree = syntaxTree->sibling;
+	}
+	traverse(codeOut, syntaxTree, symtab);
 }
 
 

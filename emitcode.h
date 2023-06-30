@@ -28,27 +28,28 @@ int emitSkip(int howMany);    // emitSkip(0) tells you where the next instructio
 void emitNewLoc(int loc);     // set the instruction counter back to loc
 
 void emitComment(const char *c);
-void emitComment(const char *c, char *cc);
+void emitComment(const char *c, const char *cc);
 void emitComment(const char *c, int n);
 
 void emitLongComment();
+void emitStandardClosing();
 
-void emitGoto(int d, long long int s, char *c);
-void emitGoto(int d, long long int s, char *c, char *cc);
-void emitGotoAbs(int a, char *c);
-void emitGotoAbs(int a, char *c, char *cc);
+void emitGoto(int d, long long int s, const char *c);
+void emitGoto(int d, long long int s, const char *c, const char *cc);
+void emitGotoAbs(int a, const char *c);
+void emitGotoAbs(int a, const char *c, const char *cc);
 
-void emitRM(const char *op, long long int r, long long int d, long long int s, char *c);
-void emitRM(const char *op, long long int r, long long int d, long long int s, char *c, char *cc);
-void emitRMAbs(const char *op, long long int r, long long int a, char *c);
-void emitRMAbs(const char *op, long long int r, long long int a, char *c, char *cc);
+void emitRM(const char *op, long long int r, long long int d, long long int s, const char *c);
+void emitRM(const char *op, long long int r, long long int d, long long int s, const char *c, const char *cc);
+void emitRMAbs(const char *op, long long int r, long long int a, const char *c);
+void emitRMAbs(const char *op, long long int r, long long int a, const char *c, const char *cc);
 
-void emitRO(const char *op, long long int r, long long int s, long long int t, char *c);
-void emitRO(const char *op, long long int r, long long int s, long long int t, char *c, char *cc);
+void emitRO(const char *op, long long int r, long long int s, long long int t, const char *c);
+void emitRO(const char *op, long long int r, long long int s, long long int t, const char *c, const char *cc);
 
-void backPatchAJumpToHere(int addr, char *comment);
-void backPatchAJumpToHere(char *cmd, int reg, int addr, char *comment);
+void backPatchAJumpToHere(int addr, const char *comment);
+void backPatchAJumpToHere(const char *cmd, int reg, int addr, const char *comment);
 
-int emitStrLit(int goffset, char *s); // for char arrays
+int emitStrLit(int goffset, const char *s); // for char arrays
 
 #endif

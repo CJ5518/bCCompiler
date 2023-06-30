@@ -1,4 +1,7 @@
-int x;
+foo() {
+
+}
 main()
 {
+   foo();
 }
