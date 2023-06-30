@@ -14,7 +14,7 @@
 #include <string.h>
 #include "emitcode.h"
 
-extern FILE *code;
+FILE *code = stdout;
 
 
 //  TM location number for current instruction emission
