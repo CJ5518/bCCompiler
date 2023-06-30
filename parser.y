@@ -8,17 +8,16 @@
 #include "scanType.h"
 #include "semantics.h"
 #include "symbolTable.h"
+#include "yyerror.h"
 using namespace std;
 
 extern "C" int yylex();
 extern "C" int yyparse();
 extern "C" FILE *yyin;
 
-void yyerror(const char *msg);
-
 int numErrors;
 int numWarnings;
-extern int line;
+extern int lineNum;
 extern int yylex();
 
 //Add a sibling to a node
@@ -300,10 +299,6 @@ term  :
 	|  COMMENT {}
 	;
 %%
-void yyerror (const char *msg)
-{ 
-	cout << "Error: " <<  msg << endl;
-}
 
 //Token thingy for some of the weirder tokens
 //Mostly made for the printing of the AST
@@ -343,6 +338,7 @@ void initTokenStrings() {
 
 
 int main(int argc, char **argv) {
+	initErrorProcessing();
 	initTokenStrings();
 	yylval.tokenData = (TokenData*)malloc(sizeof(TokenData));
 	yylval.tree = (TreeNode*)malloc(sizeof(TreeNode));

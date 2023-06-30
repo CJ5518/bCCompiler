@@ -2,6 +2,7 @@
 #include "scanType.h"
 #include "treeUtils.h"
 #include "parser.tab.h"
+#include "yyerror.h"
 
 
 #define YY_DECL extern "C" int yylex()
