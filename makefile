@@ -2,9 +2,9 @@ BIN  = bC  # name of thing to be built goes hereunknown class
 CC   = g++
 
 CPPFLAGS = -O0 -g -I./ -std=c++11
-SRCS = parser.y parser.l treeUtils.cpp semantics.cpp symbolTable.cpp yyerror.cpp emitcode.cpp
-HDRS = scanType.h treeNodes.h treeUtils.h semantics.h symbolTable.h yyerror.h emitcode.h
-OBJS = lex.yy.o parser.tab.o treeUtils.o semantics.o symbolTable.o yyerror.o emitcode.o
+SRCS = parser.y parser.l treeUtils.cpp semantics.cpp symbolTable.cpp yyerror.cpp emitcode.cpp codegen.cpp
+HDRS = scanType.h treeNodes.h treeUtils.h semantics.h symbolTable.h yyerror.h emitcode.h codegen.h
+OBJS = lex.yy.o parser.tab.o treeUtils.o semantics.o symbolTable.o yyerror.o emitcode.o codegen.o
 LIBS = -lm 
 
 $(BIN): $(OBJS)
@@ -27,6 +27,9 @@ yyerror.o: yyerror.cpp yyerror.h
 
 emitcode.o: emitcode.cpp emitcode.h
 	$(CC) $(CPPFLAGS) emitcode.cpp -c -o emitcode.o
+
+codegen.o: codegen.cpp codegen.h
+	$(CC) $(CPPFLAGS) codegen.cpp -c -o codegen.o
 
 all:
 	make
