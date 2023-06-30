@@ -27,22 +27,24 @@ int emitWhereAmI();           // gives where the next instruction will be placed
 int emitSkip(int howMany);    // emitSkip(0) tells you where the next instruction will be placed
 void emitNewLoc(int loc);     // set the instruction counter back to loc
 
-void emitComment(char *c);
-void emitComment(char *c, char *cc);
-void emitComment(char *c, int n);
+void emitComment(const char *c);
+void emitComment(const char *c, char *cc);
+void emitComment(const char *c, int n);
+
+void emitLongComment();
 
 void emitGoto(int d, long long int s, char *c);
 void emitGoto(int d, long long int s, char *c, char *cc);
 void emitGotoAbs(int a, char *c);
 void emitGotoAbs(int a, char *c, char *cc);
 
-void emitRM(char *op, long long int r, long long int d, long long int s, char *c);
-void emitRM(char *op, long long int r, long long int d, long long int s, char *c, char *cc);
-void emitRMAbs(char *op, long long int r, long long int a, char *c);
-void emitRMAbs(char *op, long long int r, long long int a, char *c, char *cc);
+void emitRM(const char *op, long long int r, long long int d, long long int s, char *c);
+void emitRM(const char *op, long long int r, long long int d, long long int s, char *c, char *cc);
+void emitRMAbs(const char *op, long long int r, long long int a, char *c);
+void emitRMAbs(const char *op, long long int r, long long int a, char *c, char *cc);
 
-void emitRO(char *op, long long int r, long long int s, long long int t, char *c);
-void emitRO(char *op, long long int r, long long int s, long long int t, char *c, char *cc);
+void emitRO(const char *op, long long int r, long long int s, long long int t, char *c);
+void emitRO(const char *op, long long int r, long long int s, long long int t, char *c, char *cc);
 
 void backPatchAJumpToHere(int addr, char *comment);
 void backPatchAJumpToHere(char *cmd, int reg, int addr, char *comment);

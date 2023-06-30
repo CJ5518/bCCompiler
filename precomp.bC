@@ -1,7 +1,4 @@
+int x;
 main()
 {
-   char a[5]:"acid";
-   char b[5];
-   
-   b = a;
-}   
+}

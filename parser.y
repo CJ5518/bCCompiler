@@ -9,6 +9,7 @@
 #include "semantics.h"
 #include "symbolTable.h"
 #include "yyerror.h"
+#include "codegen.h"
 using namespace std;
 
 extern "C" int yylex();
@@ -363,8 +364,10 @@ int main(int argc, char **argv) {
 	}
 
 	if ( optind == argc ) yyparse();
+	char* infileName;
 	for (index = optind; index < argc; index++) {
 		yyin = fopen (argv[index], "r");
+		infileName = argv[index];
 		yyparse();
 		fclose (yyin);
 	}
@@ -373,7 +376,9 @@ int main(int argc, char **argv) {
 		//symbolTable->debug(true);
 		int globalOffset = 0;
 		syntaxTree = semanticAnalysis(syntaxTree, true, false, symbolTable, globalOffset);
-		printTree(stdout, syntaxTree, true, false);
+		codegen(stdout, infileName, syntaxTree, symbolTable, globalOffset, true);
+		//w03
+		//printTree(stdout, syntaxTree, true, false);
 		if(dotAST) {
 			//IMPORTANT - I commented this out
 			//printDotTree(stdout, syntaxTree, false, false);

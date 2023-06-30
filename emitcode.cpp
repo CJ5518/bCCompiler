@@ -25,13 +25,13 @@ static int litLoc = 1;    // next empty slot in Dmem growing to higher memory
 //  Procedure emitComment prints a comment line 
 // with a comment that is the concatenation of c and d
 // 
-void emitComment(char *c, char *cc)
+void emitComment(const char *c, char *cc)
 {
     fprintf(code, "* %s %s\n", c, cc);
 }
 
 
-void emitComment(char *c, int n)
+void emitComment(const char *c, int n)
 {
     fprintf(code, "* %s %d\n", c, n);
 }
@@ -40,9 +40,14 @@ void emitComment(char *c, int n)
 //  Procedure emitComment prints a comment line 
 // with comment c in the code file
 // 
-void emitComment(char *c)
+void emitComment(const char *c)
 {
     fprintf(code, "* %s\n", c);
+}
+
+//Emit the long comment that BC uses a lot
+void emitLongComment() {
+    fprintf(code, "* ** ** ** ** ** ** ** ** ** ** ** **\n");
 }
 
 
@@ -54,14 +59,14 @@ void emitComment(char *c)
 // t = 2nd source register
 // c = a comment
 // 
-void emitRO(char *op, long long int r, long long int s, long long int t, char *c, char *cc)
+void emitRO(const char *op, long long int r, long long int s, long long int t, char *c, char *cc)
 {
     fprintf(code, "%3d:  %5s  %lld,%lld,%lld\t%s %s\n", emitLoc, op, r, s, t, c, cc);
     fflush(code);
     emitLoc++;
 }
 
-void emitRO(char *op,long long int r,long long int s,long long int t, char *c)
+void emitRO(const char *op,long long int r,long long int s,long long int t, char *c)
 {
     emitRO(op, r, s, t, c, (char *)"");
 }
@@ -75,14 +80,14 @@ void emitRO(char *op,long long int r,long long int s,long long int t, char *c)
 // s = the base register
 // c = a comment
 // 
-void emitRM(char *op, long long int r, long long int d, long long int s, char *c, char *cc)
+void emitRM(const char *op, long long int r, long long int d, long long int s, char *c, char *cc)
 {
     fprintf(code, "%3d:  %5s  %lld,%lld(%lld)\t%s %s\n", emitLoc, op, r, d, s, c, cc);
     fflush(code);
     emitLoc++;
 }
 
-void emitRM(char *op,long long int r,long long int d,long long int s, char *c)
+void emitRM(const char *op,long long int r,long long int d,long long int s, char *c)
 {
     emitRM(op, r, d, s, c, (char *)"");
 }
@@ -109,7 +114,7 @@ void emitGoto(int d,long long int s, char *c)
 // a = the absolute location in memory
 // c = a comment
 // 
-void emitRMAbs(char *op, long long int r, long long int a, char *c, char *cc)
+void emitRMAbs(const char *op, long long int r, long long int a, char *c, char *cc)
 {
     fprintf(code, "%3d:  %5s  %lld,%lld(%lld)\t%s %s\n", emitLoc, op, r, a - (long long int)(emitLoc + 1),
 	    (long long int)PC, c, cc);
@@ -118,7 +123,7 @@ void emitRMAbs(char *op, long long int r, long long int a, char *c, char *cc)
 }
 
 
-void emitRMAbs(char *op,long long int r,long long int a, char *c)
+void emitRMAbs(const char *op,long long int r,long long int a, char *c)
 {
     emitRMAbs(op, r, a, c, (char *)"");
 }
