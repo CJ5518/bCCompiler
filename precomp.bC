@@ -1,7 +1,14 @@
-foo() {
+foo(int param,other2,other3; char param2; int param3) {
+   int x,y,z,a,s,d,f,g;
+   int arr[1];
 
+   {
+      int aaaaa,bbbbb;
+   }
+
+   x = 3;
 }
 main()
 {
-   foo();
+   foo(1,2,3,'4',5);
 }

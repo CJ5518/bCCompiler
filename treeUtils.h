@@ -28,4 +28,7 @@ const char *expTypeToStr(ExpType type, bool isArray=false, bool isStatic=false);
 void printTreeNode(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAllocation);
 void printTree(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAllocation);
 
+//Returns -1 if node is NULL
+int siblingCount(TreeNode* node);
+
 #endif

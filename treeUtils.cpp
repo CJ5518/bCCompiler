@@ -373,3 +373,14 @@ void printTree(FILE *out, TreeNode *syntaxTree, bool showExpType, bool showAlloc
 	printTreeRecursive(out, syntaxTree, showExpType, showAllocation, 0);
 }
 
+//Returns -1 if node is NULL
+int siblingCount(TreeNode* node) {
+	if (!node)
+		return -1;
+	int q = 0;
+	while (node->sibling) {
+		node = node->sibling;
+		q++;
+	}
+	return q;
+}
