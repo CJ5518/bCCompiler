@@ -20,13 +20,34 @@ void traverse(TreeNode* node, SymbolTable* symtab) {
 					emitLongComment();
 					emitComment("FUNCTION", node->attr.name);
 					//TOFFset is -2 - parameterCount, so we count the parameters here
-					//Also we count the child, so we do -3
-					emitComment("TOFF set:", -3 - siblingCount(node->child[0]));
+					//Also we count the child, so we do -3, which works because siblingCount returns -1 if there is no child
+					toffset = -3 - siblingCount(node->child[0]);
+					emitComment("TOFF set:", toffset);
 					//Do some other stuff
 					emitRM("ST", 3,-1,1, "Store return address");
-					//traverse(node->child[0], symtab);
+					//Traverse the funcs other child, either a compound or some other stmt
+					traverse(node->child[1], symtab);
 					emitStandardClosing();
-			}
+					break;
+			} break;
+		case NodeKind::StmtK:
+			switch (node->kind.stmt) {
+				case StmtKind::CompoundK:
+				//Start a compound
+				emitComment("COMPOUND");
+				toffset -= siblingCount(node->child[0]) + 1;
+				emitComment("TOFF set:", toffset);
+
+				//Do its body
+				emitComment("Compound Body");
+				traverse(node->child[1], symtab);
+
+				//Undo toffset changes, end compound
+				toffset += siblingCount(node->child[0]) + 1;
+				emitComment("TOFF set:", toffset);
+				emitComment("END COMPOUND");
+				break;
+			} break;
 	}
 }
 

@@ -1,9 +1,11 @@
 foo(int param,other2,other3; char param2; int param3) {
    int x,y,z,a,s,d,f,g;
-   int arr[1];
 
    {
       int aaaaa,bbbbb;
+      {
+         int we,wee;
+      }
    }
 
    x = 3;
