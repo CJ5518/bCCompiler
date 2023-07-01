@@ -1,4 +1,5 @@
 #include "symbolTable.h"
+#include "treeNodes.h"
 
 // // // // // // // // // // // // // // // // // // // // 
 //
@@ -274,6 +275,20 @@ void SymbolTable::applyToAllGlobal(void (*action)(std::string , void *))
 	stack[0]->applyToAll(action);
 }
 
+int count = 0;
+
+void addIfIsVar(std::string sym, void *ptr) {
+	TreeNode* node = (TreeNode*)ptr;
+	if (node->nodekind == NodeKind::DeclK && node->kind.decl == DeclKind::VarK) {
+		count++;
+	}
+}
+
+int SymbolTable::countGlobalVariables() {
+	count = 0;
+	applyToAllGlobal(addIfIsVar);
+	return count;
+}
 
 
 

@@ -46,12 +46,11 @@ void pointerPrintStr(void *data);
 //
 
 class Scope {
-private:
+public:
 	static bool debugFlg;                      // turn on tedious debugging
 	std::string name;                          // name of scope
 	std::map<std::string , void *> symbols;    // use an ordered map (not as fast as unordered)
 
-public:
 	Scope(std::string newname);
 	~Scope();
 	std::string scopeName();                   // returns name of scope
@@ -76,11 +75,10 @@ public:
 // 
 
 class SymbolTable {
-private:
+public:
 	std::vector<Scope *> stack;
 	bool debugFlg;
 
-public:
 	SymbolTable();
 	void debug(bool state);                          // sets the debug flags
 	int depth();                                     // what is the depth of the scope stack?
@@ -97,6 +95,7 @@ public:
 													 // returns false if already defined
 	void applyToAll(void (*action)(std::string , void *));        // apply func to all symbol/data pairs in local scope
 	void applyToAllGlobal(void (*action)(std::string , void *));  // apply func to all symbol/data pairs in global scope
+	int countGlobalVariables();
 };
 
 #endif

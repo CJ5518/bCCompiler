@@ -1,14 +1,12 @@
-foo(int param,other2,other3; char param2; int param3) {
-   int x,y,z,a,s,d,f,g;
+int aglobl:3;
 
-   {
-      int aaaaa,bbbbb;
-      {
-         int we,wee;
-      }
-   }
+foo() {
+   static int StaticVariable:6;
 }
+
+int gloval:1111;
+
 main()
 {
-   foo(1,2,3,'4',5);
+   static int StaticVariable:9999;
 }
