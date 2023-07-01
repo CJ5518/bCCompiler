@@ -60,8 +60,8 @@ void emitStandardClosing() {
     emitComment("Add standard closing in case there is no return statement");
     emitRM("LDC", 2, 0, 6, "Set return value to 0");
     emitRM("LD", 3, -1, 1, "Load return address");
-    emitRM("LD", 1, 0, 1, "Adjust fp ");
-    emitRM("LDC", 7, 0, 3, "Return");
+    emitRM("LD", 1, 0, 1, "Adjust fp");
+    emitRM("JMP", 7, 0, 3, "Return");
 }
 
 
