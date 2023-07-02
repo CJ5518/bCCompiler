@@ -1,14 +1,6 @@
-int aglobl:3;
-char other:'4';
-bool othe2r:true;
-
-foo() {
-   static int StaticVariable:6;
-}
-
-int gloval:1111;
-
+char alpha[50]:"first";
+int x:4;
+char beta[100]:"second";char besta[100]:"second";
 main()
 {
-   static int StaticVariable:9999;
 }

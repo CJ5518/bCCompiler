@@ -8,7 +8,7 @@ void outputHeader(char* srcFile);
 int foffset = -2;
 int toffset = -2;
 //Not sure about this one
-int goffset = -2;
+int goffset = 0;
 
 //The start of the main function, need this for the very end
 int mainIndex = -1;
@@ -167,6 +167,41 @@ std::multimap<std::string, TreeNode*> globalsAndStatics;
 //This one gives us the actual index
 std::vector<TreeNode*> globalsAndStaticsIndex;
 
+
+//Handles insertion/emission of a global or static
+void handleGlobalOrStaticVar(TreeNode* node, bool emitInsteadOfInsert) {
+	if (!node) return;
+	//If we insert, do basically the same for arrays and non-arrays
+	if (!emitInsteadOfInsert) {
+		node->offset = goffset;
+		if (node->isArray) {
+			goffset += node->size;
+			if (node->child[0]) {
+				if (node->child[0]->type == ExpType::String)
+					goffset += strlen(node->child[0]->attr.string);
+			}
+		} else {
+			goffset += 1;
+		}
+		globalsAndStatics.insert(std::pair<std::string, TreeNode*>((std::string)node->attr.name, node));
+		globalsAndStaticsIndex.push_back(node);	
+		return;
+	}
+
+	printf("%d\n", node->offset);
+	char* name = node->attr.name;
+
+	if (node->isArray) {
+		//This is where the string literal will be placed, but first the size
+		int offset = node->offset + 1;
+		emitRM("LDC", 3, node->size, 6, "load size of array", name);
+		//Now where do we put it?
+		int wherePutSize = 0;
+	} else {
+		emitConstantVariable(node, goffset);
+	}
+}
+
 void doGlobalsAndStatics(TreeNode* node, bool isSiblingOfRoot) {
 	if (!node) return;
 	if (isSiblingOfRoot) {
@@ -178,8 +213,7 @@ void doGlobalsAndStatics(TreeNode* node, bool isSiblingOfRoot) {
 				doGlobalsAndStatics(node->child[2], false);
 			} else if (node->kind.decl == DeclKind::VarK) {
 				//A global var
-				globalsAndStatics.insert(std::pair<std::string, TreeNode*>((std::string)node->attr.name, node));
-				globalsAndStaticsIndex.push_back(node);
+				handleGlobalOrStaticVar(node, false);
 			} else {
 				printf("CJERROR: Bad node->kind.decl is sibling of root\n");
 			}
@@ -188,13 +222,13 @@ void doGlobalsAndStatics(TreeNode* node, bool isSiblingOfRoot) {
 		}
 	} else {
 		if (node->nodekind == NodeKind::DeclK && node->kind.decl == DeclKind::VarK && node->isStatic) {
-			globalsAndStatics.insert(std::pair<std::string, TreeNode*>((std::string)node->attr.name, node));
-			globalsAndStaticsIndex.push_back(node);
+			handleGlobalOrStaticVar(node, false);
 		} else {
 			doGlobalsAndStatics(node->child[0], false);
 			doGlobalsAndStatics(node->child[1], false);
 			doGlobalsAndStatics(node->child[2], false);
 			doGlobalsAndStatics(node->sibling, false);
+			
 		}
 		return;
 	}
@@ -202,16 +236,17 @@ void doGlobalsAndStatics(TreeNode* node, bool isSiblingOfRoot) {
 		doGlobalsAndStatics(node->sibling);
 	} else {
 		//We're done, we've traversed the tree
-		emitRM("LDA", 1, -globalsAndStaticsIndex.size(), 0, "set first frame at end of globals");
+		emitRM("LDA", 1, -goffset, 0, "set first frame at end of globals");
 		emitRM("ST", 1,0,1, "store old fp (point to self)");
 		emitComment("INIT GLOBALS AND STATICS");
 
 		//For every entry
+		goffset = 0;
 		for (std::multimap<std::string , TreeNode*>::iterator it=globalsAndStatics.begin(); it!=globalsAndStatics.end(); it++) {
 			//action(it->first, it->second);
 			for (int q = 0; q < globalsAndStaticsIndex.size(); q++) {
 				if (it->second == globalsAndStaticsIndex[q]) {
-					emitConstantVariable(it->second, -q);
+					handleGlobalOrStaticVar(it->second, true);
 				}
 			}
 		}
