@@ -61,6 +61,17 @@ void setType(TreeNode* t, ExpType type, bool isStatic) {
 		t = t->sibling;
 	}
 }
+
+//For use in the root declList only
+void setGlobal(TreeNode* t) {
+	while (t) {
+		// set t->type and t->isStatic
+		// t = t->sibling;
+		t->varKind = VarKind::Global;
+		t = t->sibling;
+	}
+}
+
 // the syntax tree goes here
 TreeNode* syntaxTree;
 
@@ -83,7 +94,7 @@ TreeNode* syntaxTree;
 %type <type> typeSpec
 %type <tree> immutable call args argList constant
 %%
-program  :  precomList declList {syntaxTree = $2;}
+program  :  precomList declList {setGlobal($2);syntaxTree = $2;}
 	;
 
 precomList : precomList PRECOMPILER {printf("%s\n", yylval.tokenData->tokenstr);}

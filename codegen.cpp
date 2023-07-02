@@ -7,7 +7,6 @@ void outputHeader(char* srcFile);
 //Not sure about this one
 int foffset = -2;
 int toffset = -2;
-//Not sure about this one
 int goffset = 0;
 
 //The start of the main function, need this for the very end
@@ -31,13 +30,34 @@ int siblingCountWithoutStatics(TreeNode* node) {
 }
 
 
-void traverse(TreeNode* node, SymbolTable* symtab);
+void traverseGen(TreeNode* node, SymbolTable* symtab, bool firstPass);
 
-void caseDeclK(TreeNode* node, SymbolTable* symtab) {
+void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
+	if (firstPass) {
+		switch (node->kind.decl) {
+			case DeclKind::VarK: {
+				node->offset = 1;
+				if (node->varKind == VarKind::Global || node->isStatic) {
+					if (node->isArray) {
+						//Check for child, initializer
+						traverseGen(node->child[0], symtab, firstPass);
+						node->offset = goffset;
+						goffset -= node->size;
+					}
+				}
+			} break;
+		}
+	} else {
+		return;
+	}
+
+
 	switch (node->kind.decl) {
+		//This isn't very good, needs some fixing up
 		case DeclKind::FuncK:
 			emitComment("");
 			emitLongComment();
+			//goffset--;
 			emitComment("FUNCTION", node->attr.name);
 
 			if (strcmp("main", node->attr.name) == 0) {
@@ -51,14 +71,24 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 			emitComment("TOFF set:", toffset);
 			//Do some other stuff
 			emitRM("ST", 3,-1,1, "Store return address");
-			//Traverse the funcs other child, either a compound or some other stmt
-			traverse(node->child[1], symtab);
+			//traverseGen the funcs other child, either a compound or some other stmt
+			traverseGen(node->child[1], symtab, firstPass);
 			emitStandardClosing();
 			emitComment("END FUNCTION", node->attr.name);
+			//goffset++;
 			break;
+		case DeclKind::VarK: {
+
+		} break;
 	}
 }
-void caseStmtK(TreeNode* node, SymbolTable* symtab) {
+void caseStmtK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
+	if (firstPass) {
+
+	} else {
+		return;
+	}
+	
 	switch (node->kind.stmt) {
 		case StmtKind::CompoundK:
 		//Start a compound
@@ -68,7 +98,7 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 
 		//Do its body
 		emitComment("Compound Body");
-		traverse(node->child[1], symtab);
+		traverseGen(node->child[1], symtab, firstPass);
 
 		//Undo toffset changes, end compound
 		toffset += siblingCountWithoutStatics(node->child[0]) + 1;
@@ -78,38 +108,35 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 	}
 }
 
-//Bit of a rough function right now, not sure how it will interact with arrays
-//and the rest of the code, useful for the globals and statics only right now
-//Used in syntax like int x:4;
-void emitConstantVariable(TreeNode* node, int where) {
-	if (!node || node->nodekind != NodeKind::DeclK || node->kind.decl != DeclKind::VarK) {
+void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
+	if (firstPass) {
+		switch (node->kind.exp) {
+			case ExpKind::CallK: {
+				emitComment("CALL", node->attr.name);
+			}
+			break;
+			case ExpKind::AssignK:
+			break;
+			case ExpKind::ConstantK: {
+				switch(node->type) {
+					case ExpType::String:
+					node->offset = goffset-1;
+					goffset -= strlen(node->attr.string);
+					break;
+					default:
+					printf("CJERROR: Fell out of node->type in node->kind.exp\n");
+					break;
+				}
+			}
+			break;
+		}
+	} else {
 		return;
 	}
-	if (!node->child[0])
-		return;
-	if (node->child[0]->nodekind != NodeKind::ExpK || node->child[0]->kind.exp != ExpKind::ConstantK)
-		return;
-	char* name = node->attr.name;
 
-	switch (node->type) {
-		case ExpType::Integer:
-		emitRM("LDC", 3, node->child[0]->attr.value, 6, "Load integer constant");
-		break;
-		case ExpType::Boolean:
-		emitRM("LDC", 3, node->child[0]->attr.value, 6, "Load Boolean constant");
-		break;
-		case ExpType::Char:
-		emitRM("LDC", 3, node->child[0]->attr.cvalue, 6, "Load char constant");
-		break;
-		case ExpType::String:
-		emitRM("LDC", 3, node->child[0]->attr.value, 6, "Load STRING constant");
-		break;
-	}
 
-	emitRM("ST", 3, where, 0, "Store variable", name);
-}
+	//Code generation
 
-void caseExpK(TreeNode* node, SymbolTable* symtab) {
 	emitComment("EXPRESSION");
 	switch (node->kind.exp) {
 		case ExpKind::CallK: {
@@ -118,28 +145,47 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		break;
 		case ExpKind::AssignK:
 		break;
+		case ExpKind::ConstantK: {
+			switch (node->type) {
+				case ExpType::String:
+				emitStrLit(node->offset, node->attr.string);
+				break;
+			}
+		} break;
 	} 
 }
 
-void traverse(TreeNode* node, SymbolTable* symtab) {
+void traverseGen(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 	if (!node) return;
+
+	if ((firstPass && node->codeGenFirstPass) || node->codeGenSecondPass)
+		return;
 
 	switch (node->nodekind) {
 		//DECLARATION KIND
 		case NodeKind::DeclK:
-		caseDeclK(node, symtab);
+		caseDeclK(node, symtab, firstPass);
 		break;
 		//STATEMENT KIND
 		case NodeKind::StmtK:
-		caseStmtK(node, symtab);
+		caseStmtK(node, symtab, firstPass);
 		break;
 		//EXPRESSION KIND
 		case NodeKind::ExpK:
-		caseExpK(node, symtab);
+		caseExpK(node, symtab, firstPass);
 		break;
 	}
 
-	traverse(node->sibling, symtab);
+	if (firstPass) {
+		node->codeGenFirstPass = true;
+	} else {
+		node->codeGenSecondPass = true;
+	}
+
+	traverseGen(node->child[0], symtab, firstPass);
+	traverseGen(node->child[1], symtab, firstPass);
+	traverseGen(node->child[2], symtab, firstPass);
+	traverseGen(node->sibling, symtab, firstPass);
 }
 
 void doGlobalsAndStatics(TreeNode* node, bool isSiblingOfRoot = true);
@@ -150,114 +196,13 @@ void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* sy
 	for (int q = 0; q < 7; q++) {
 		syntaxTree = syntaxTree->sibling;
 	}
-	traverse(syntaxTree, symtab);
+	traverseGen(syntaxTree, symtab, true);
+	traverseGen(syntaxTree, symtab, false);
 	//After the tree is done, write out the final segment
 	backPatchAJumpToHere(0, "Jump to init [backpatch]");
 
 	emitComment("INIT");
-
-	//Doesn't count statics, no good, put this all in doGlobalsAndStatics
-	//emitRM("LDA", 1, -symtab->countGlobalVariables(), 0, "set first frame at end of globals");
-	//emitRM("ST", 1,0,1,"store old fp (point to self)");
-	doGlobalsAndStatics(syntaxTree);
 }
-
-//This one gives the order to print them in
-std::multimap<std::string, TreeNode*> globalsAndStatics;
-//This one gives us the actual index
-std::vector<TreeNode*> globalsAndStaticsIndex;
-
-
-//Handles insertion/emission of a global or static
-void handleGlobalOrStaticVar(TreeNode* node, bool emitInsteadOfInsert) {
-	if (!node) return;
-	//If we insert, do basically the same for arrays and non-arrays
-	if (!emitInsteadOfInsert) {
-		node->offset = goffset;
-		if (node->isArray) {
-			goffset += node->size;
-			if (node->child[0]) {
-				if (node->child[0]->type == ExpType::String)
-					goffset += strlen(node->child[0]->attr.string);
-			}
-		} else {
-			goffset += 1;
-		}
-		globalsAndStatics.insert(std::pair<std::string, TreeNode*>((std::string)node->attr.name, node));
-		globalsAndStaticsIndex.push_back(node);	
-		return;
-	}
-
-	printf("%d\n", node->offset);
-	char* name = node->attr.name;
-
-	if (node->isArray) {
-		//This is where the string literal will be placed, but first the size
-		int offset = node->offset + 1;
-		emitRM("LDC", 3, node->size, 6, "load size of array", name);
-		//Now where do we put it?
-		int wherePutSize = 0;
-	} else {
-		emitConstantVariable(node, goffset);
-	}
-}
-
-void doGlobalsAndStatics(TreeNode* node, bool isSiblingOfRoot) {
-	if (!node) return;
-	if (isSiblingOfRoot) {
-		if (node->nodekind == NodeKind::DeclK) {
-			if (node->kind.decl == DeclKind::FuncK) {
-				//Is a function, check it for statics
-				doGlobalsAndStatics(node->child[0], false);
-				doGlobalsAndStatics(node->child[1], false);
-				doGlobalsAndStatics(node->child[2], false);
-			} else if (node->kind.decl == DeclKind::VarK) {
-				//A global var
-				handleGlobalOrStaticVar(node, false);
-			} else {
-				printf("CJERROR: Bad node->kind.decl is sibling of root\n");
-			}
-		} else {
-			printf("CJERROR: Bad node is sibling of root\n");
-		}
-	} else {
-		if (node->nodekind == NodeKind::DeclK && node->kind.decl == DeclKind::VarK && node->isStatic) {
-			handleGlobalOrStaticVar(node, false);
-		} else {
-			doGlobalsAndStatics(node->child[0], false);
-			doGlobalsAndStatics(node->child[1], false);
-			doGlobalsAndStatics(node->child[2], false);
-			doGlobalsAndStatics(node->sibling, false);
-			
-		}
-		return;
-	}
-	if (node->sibling) {
-		doGlobalsAndStatics(node->sibling);
-	} else {
-		//We're done, we've traversed the tree
-		emitRM("LDA", 1, -goffset, 0, "set first frame at end of globals");
-		emitRM("ST", 1,0,1, "store old fp (point to self)");
-		emitComment("INIT GLOBALS AND STATICS");
-
-		//For every entry
-		goffset = 0;
-		for (std::multimap<std::string , TreeNode*>::iterator it=globalsAndStatics.begin(); it!=globalsAndStatics.end(); it++) {
-			//action(it->first, it->second);
-			for (int q = 0; q < globalsAndStaticsIndex.size(); q++) {
-				if (it->second == globalsAndStaticsIndex[q]) {
-					handleGlobalOrStaticVar(it->second, true);
-				}
-			}
-		}
-		emitComment("END INIT GLOBALS AND STATICS");
-		emitRM("LDA", 3,1,7, "Return address in ac");
-		emitRM("JMP", 7, mainIndex - emitWhereAmI() - 1, 7, "Jump to main");
-		emitRO("HALT", 0,0,0,"DONE!");
-		emitComment("END INIT");
-	}
-}
-
 
 
 

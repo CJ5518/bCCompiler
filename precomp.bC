@@ -1,6 +1,10 @@
-char alpha[50]:"first";
-int x:4;
-char beta[100]:"second";char besta[100]:"second";
+char firstGlobal[1000]:"firstGlobalStringLit";
+
+char secondGlobal[3000]:"secondGlobalStringLit";
+
 main()
 {
+   char local[2000]:"localStringLit";
 }
+
+char thirdGlobal[3000]:"thirdGlobalStringLit";
