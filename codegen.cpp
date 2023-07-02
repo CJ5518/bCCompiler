@@ -90,8 +90,22 @@ void emitConstantVariable(TreeNode* node, int where) {
 	if (node->child[0]->nodekind != NodeKind::ExpK || node->child[0]->kind.exp != ExpKind::ConstantK)
 		return;
 	char* name = node->attr.name;
-	int val = node->child[0]->attr.value;
-	emitRM("LDC", 3, val, 6, "Load integer constant");
+
+	switch (node->type) {
+		case ExpType::Integer:
+		emitRM("LDC", 3, node->child[0]->attr.value, 6, "Load integer constant");
+		break;
+		case ExpType::Boolean:
+		emitRM("LDC", 3, node->child[0]->attr.value, 6, "Load Boolean constant");
+		break;
+		case ExpType::Char:
+		emitRM("LDC", 3, node->child[0]->attr.cvalue, 6, "Load char constant");
+		break;
+		case ExpType::String:
+		emitRM("LDC", 3, node->child[0]->attr.value, 6, "Load STRING constant");
+		break;
+	}
+
 	emitRM("ST", 3, where, 0, "Store variable", name);
 }
 

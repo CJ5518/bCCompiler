@@ -1,4 +1,6 @@
 int aglobl:3;
+char other:'4';
+bool othe2r:true;
 
 foo() {
    static int StaticVariable:6;
