@@ -13,11 +13,10 @@ int goffset = 0;
 int mainIndex = -1;
 
 
-//Helper functions
-//Returns -1 if node is NULL
-int siblingCountWithoutStatics(TreeNode* node) {
+//Returns 0 if node is NULL
+int countOffsets(TreeNode* node) {
 	if (!node)
-		return -1;
+		return 0;
 	int q = 0;
 	if (node->isStatic)
 		q--;
@@ -46,6 +45,19 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 					}
 				}
 			} break;
+			case DeclKind::FuncK: {
+				//If this function has parameters
+				if (node->child[0]) {
+					//Parms always have offset of one
+					int count = 0;
+					TreeNode* sibling = node->child[0];
+					while (sibling) {
+						count++;
+						sibling = sibling->sibling;
+					}
+					node->offset = count;
+				}
+			} break;
 		}
 	} else {
 		return;
@@ -65,9 +77,7 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 			}
 
 
-			//TOFFset is -2 - parameterCount, so we count the parameters here
-			//Also we count the child, so we do -3, which works because siblingCount returns -1 if there is no child
-			toffset = -3 - siblingCountWithoutStatics(node->child[0]);
+			toffset -= node->offset;
 			emitComment("TOFF set:", toffset);
 			//Do some other stuff
 			emitRM("ST", 3,-1,1, "Store return address");
@@ -75,6 +85,7 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 			traverseGen(node->child[1], symtab, firstPass);
 			emitStandardClosing();
 			emitComment("END FUNCTION", node->attr.name);
+			toffset += node->offset;
 			//goffset++;
 			break;
 		case DeclKind::VarK: {
@@ -93,15 +104,14 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 		case StmtKind::CompoundK:
 		//Start a compound
 		emitComment("COMPOUND");
-		toffset -= siblingCountWithoutStatics(node->child[0]) + 1;
+		toffset -= node->offset;
 		emitComment("TOFF set:", toffset);
 
 		//Do its body
 		emitComment("Compound Body");
 		traverseGen(node->child[1], symtab, firstPass);
 
-		//Undo toffset changes, end compound
-		toffset += siblingCountWithoutStatics(node->child[0]) + 1;
+		toffset += node->offset;
 		emitComment("TOFF set:", toffset);
 		emitComment("END COMPOUND");
 		break;
@@ -120,7 +130,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 			case ExpKind::ConstantK: {
 				switch(node->type) {
 					case ExpType::String:
-					node->offset = goffset-1;
+					node->offset = goffset;
 					goffset -= strlen(node->attr.string);
 					break;
 					default:

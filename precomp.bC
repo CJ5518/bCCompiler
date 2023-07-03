@@ -1,10 +1,9 @@
-char firstGlobal[1000]:"firstGlobalStringLit";
 
-char secondGlobal[3000]:"secondGlobalStringLit";
+int foo(int x[],y[]; char a[],b,c) {
+
+}
 
 main()
 {
-   char local[2000]:"localStringLit";
 }
 
-char thirdGlobal[3000]:"thirdGlobalStringLit";
