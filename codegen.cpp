@@ -60,61 +60,68 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 			} break;
 		}
 	} else {
-		return;
-	}
+		switch (node->kind.decl) {
+			//This isn't very good, needs some fixing up
+			case DeclKind::FuncK:
+				emitComment("");
+				emitLongComment();
+				//goffset--;
+				emitComment("FUNCTION", node->attr.name);
+
+				if (strcmp("main", node->attr.name) == 0) {
+					mainIndex = emitWhereAmI();
+				}
 
 
-	switch (node->kind.decl) {
-		//This isn't very good, needs some fixing up
-		case DeclKind::FuncK:
-			emitComment("");
-			emitLongComment();
-			//goffset--;
-			emitComment("FUNCTION", node->attr.name);
+				toffset -= node->offset;
+				emitComment("TOFF set:", toffset);
+				//Do some other stuff
+				emitRM("ST", 3,-1,1, "Store return address");
+				//traverseGen the funcs other child, either a compound or some other stmt
+				traverseGen(node->child[1], symtab, firstPass);
+				emitStandardClosing();
+				emitComment("END FUNCTION", node->attr.name);
+				toffset += node->offset;
+				//goffset++;
+				break;
+			case DeclKind::VarK: {
 
-			if (strcmp("main", node->attr.name) == 0) {
-				mainIndex = emitWhereAmI();
-			}
-
-
-			toffset -= node->offset;
-			emitComment("TOFF set:", toffset);
-			//Do some other stuff
-			emitRM("ST", 3,-1,1, "Store return address");
-			//traverseGen the funcs other child, either a compound or some other stmt
-			traverseGen(node->child[1], symtab, firstPass);
-			emitStandardClosing();
-			emitComment("END FUNCTION", node->attr.name);
-			toffset += node->offset;
-			//goffset++;
-			break;
-		case DeclKind::VarK: {
-
-		} break;
+			} break;
+		}
 	}
 }
 void caseStmtK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 	if (firstPass) {
-
+		switch (node->kind.stmt) {
+			case StmtKind::CompoundK: {
+				//If we have parameters
+				if (node->child[0]) {
+					traverseGen(node->child[0], symtab, firstPass);
+					TreeNode* sibling = node->child[0];
+					while (sibling) {
+						node->offset++;
+						sibling = sibling->sibling;
+					}
+				}
+			} break;
+		}
 	} else {
-		return;
-	}
-	
-	switch (node->kind.stmt) {
-		case StmtKind::CompoundK:
-		//Start a compound
-		emitComment("COMPOUND");
-		toffset -= node->offset;
-		emitComment("TOFF set:", toffset);
+		switch (node->kind.stmt) {
+			case StmtKind::CompoundK:
+			//Start a compound
+			emitComment("COMPOUND");
+			toffset -= node->offset;
+			emitComment("TOFF set:", toffset);
 
-		//Do its body
-		emitComment("Compound Body");
-		traverseGen(node->child[1], symtab, firstPass);
+			//Do its body
+			emitComment("Compound Body");
+			traverseGen(node->child[1], symtab, firstPass);
 
-		toffset += node->offset;
-		emitComment("TOFF set:", toffset);
-		emitComment("END COMPOUND");
-		break;
+			toffset += node->offset;
+			emitComment("TOFF set:", toffset);
+			emitComment("END COMPOUND");
+			break;
+		}
 	}
 }
 
@@ -133,6 +140,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 					node->offset = goffset;
 					goffset -= strlen(node->attr.string);
 					break;
+					case ExpType::Integer: break;
 					default:
 					printf("CJERROR: Fell out of node->type in node->kind.exp\n");
 					break;
@@ -141,28 +149,28 @@ void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 			break;
 		}
 	} else {
-		return;
-	}
+		//Code generation
 
-
-	//Code generation
-
-	emitComment("EXPRESSION");
-	switch (node->kind.exp) {
-		case ExpKind::CallK: {
-			emitComment("CALL", node->attr.name);
-		}
-		break;
-		case ExpKind::AssignK:
-		break;
-		case ExpKind::ConstantK: {
-			switch (node->type) {
-				case ExpType::String:
-				emitStrLit(node->offset, node->attr.string);
-				break;
+		emitComment("EXPRESSION");
+		switch (node->kind.exp) {
+			case ExpKind::CallK: {
+				emitComment("CALL", node->attr.name);
 			}
-		} break;
-	} 
+			break;
+			case ExpKind::AssignK:
+			break;
+			case ExpKind::ConstantK: {
+				switch (node->type) {
+					case ExpType::String:
+					emitStrLit(node->offset, node->attr.string);
+					break;
+					case ExpType::Integer:
+					emitRM("LDC", 3, node->attr.value, 6, "Load integer constant");
+					break;
+				}
+			} break;
+		} 
+	}
 }
 
 void traverseGen(TreeNode* node, SymbolTable* symtab, bool firstPass) {

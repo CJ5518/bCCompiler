@@ -79,7 +79,7 @@ struct TreeNode {
 
 	// extra stuff inferred about the node
 	VarKind varKind;                       // global, local, localStatic, parameter
-	int offset;                            // offset for address of object
+	int offset = 0;                            // offset for address of object
 	int size;                              // used for size of array
 	bool codeGenFirstPass = false;
 	bool codeGenSecondPass = false;
