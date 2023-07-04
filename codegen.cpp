@@ -61,13 +61,14 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 				//If this function has parameters
 				if (node->child[0]) {
 					//Parms always have offset of one
-					int count = 0;
+					node->offset = 0;
 					TreeNode* sibling = node->child[0];
 					while (sibling) {
-						count++;
+						node->offset--;
+						sibling->offset = node->offset;
+						sibling->codeGenFirstPass = true;
 						sibling = sibling->sibling;
 					}
-					node->offset = count;
 				}
 			} break;
 		}
@@ -85,7 +86,7 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 				}
 
 
-				toffset -= node->offset;
+				toffset += node->offset;
 				emitComment("TOFF set:", toffset);
 				//Do some other stuff
 				emitRM("ST", 3,-1,1, "Store return address");
@@ -93,7 +94,7 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 				traverseGen(node->child[1], symtab, firstPass);
 				emitStandardClosing();
 				emitComment("END FUNCTION", node->attr.name);
-				toffset += node->offset;
+				toffset -= node->offset;
 				//goffset++;
 				break;
 			case DeclKind::VarK: {
@@ -159,6 +160,9 @@ void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 				}
 			}
 			break;
+			case ExpKind::IdK: {
+				
+			} break;
 		}
 	} else {
 		//Code generation
