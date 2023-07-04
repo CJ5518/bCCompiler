@@ -182,23 +182,42 @@ void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 					break;
 				}
 			} break;
-			case ExpKind::OpK:
-			switch (node->attr.op) {
-				//Some code in here might be useful for other ops
-				case '+': {
-					bool oldShouldPrint = shouldPrintExpression;
-					shouldPrintExpression = false;
-					traverseGen(node->child[0], symtab, firstPass);
-					emitRM("ST", 3, toffset, 1, "Push left side");
-					toffDec();
-					traverseGen(node->child[1], symtab, firstPass);
-					toffInc();
-					emitRM("LD", 4, toffset, 1, "Pop left into ac1");
-					emitRO("ADD", 3, 4, 3, "Op +");
-					shouldPrintExpression = oldShouldPrint;
-
+			case ExpKind::OpK: {
+				
+				//Pre-op
+				switch (node->attr.op) {
+					case '[': {
+						emitRM("LD", 3, node->child[0]->offset, 1,
+						"Load address of base of array", node->child[0]->attr.name);
+					}
 				}
+
+				//Common code (for ops with 2 args)
+
+				bool oldShouldPrint = shouldPrintExpression;
+				shouldPrintExpression = false;
+				traverseGen(node->child[0], symtab, firstPass);
+				emitRM("ST", 3, toffset, 1, "Push left side");
+				toffDec();
+				traverseGen(node->child[1], symtab, firstPass);
+				toffInc();
+				emitRM("LD", 4, toffset, 1, "Pop left into ac1");
+
+
+				//Post op
+				switch (node->attr.op) {
+					//Some code in here might be useful for other ops
+					case '+': {
+						emitRO("ADD", 3, 4, 3, "Op +");
+					} break;
+					case '[': {
+						emitRO("SUB", 3,4,3,"compute location from index");
+						emitRM("LD", 3,0,3,"Load array element");
+					}
+				}
+				shouldPrintExpression = oldShouldPrint;
 			}
+			break;
 		} 
 	}
 }

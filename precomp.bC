@@ -1,8 +1,8 @@
 
 int foo(int x[],y[]; char a[],b,c) {
     int inA, inB, inC;
-
-    6;5;5;5;5;5;4+3+4+34+34+34+34+34+3;
+    x[3];
+    y[2];
 }
 
 main()
