@@ -9,6 +9,18 @@ int foffset = -2;
 int toffset = -2;
 int goffset = 0;
 
+//Flags
+bool shouldPrintExpression = true;
+
+void toffDec() {
+	toffset--;
+	emitComment("TOFF dec:", toffset);
+}
+void toffInc() {
+	toffset++;
+	emitComment("TOFF inc:", toffset);
+}
+
 //The start of the main function, need this for the very end
 int mainIndex = -1;
 
@@ -151,7 +163,8 @@ void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 	} else {
 		//Code generation
 
-		emitComment("EXPRESSION");
+		if (shouldPrintExpression)
+			emitComment("EXPRESSION");
 		switch (node->kind.exp) {
 			case ExpKind::CallK: {
 				emitComment("CALL", node->attr.name);
@@ -169,6 +182,23 @@ void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 					break;
 				}
 			} break;
+			case ExpKind::OpK:
+			switch (node->attr.op) {
+				//Some code in here might be useful for other ops
+				case '+': {
+					bool oldShouldPrint = shouldPrintExpression;
+					shouldPrintExpression = false;
+					traverseGen(node->child[0], symtab, firstPass);
+					emitRM("ST", 3, toffset, 1, "Push left side");
+					toffDec();
+					traverseGen(node->child[1], symtab, firstPass);
+					toffInc();
+					emitRM("LD", 4, toffset, 1, "Pop left into ac1");
+					emitRO("ADD", 3, 4, 3, "Op +");
+					shouldPrintExpression = oldShouldPrint;
+
+				}
+			}
 		} 
 	}
 }
