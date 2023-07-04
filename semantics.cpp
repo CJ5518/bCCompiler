@@ -2,6 +2,7 @@
 #include "treeUtils.h"
 #include "parser.tab.h"
 
+int goffsetsem = 0;
 
 TokenData* makeDummyTokenData(const char* name) {
 	TokenData* data = new TokenData();
@@ -226,19 +227,45 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				syntaxTree->type = ((TreeNode*)symtab->lookup(id))->type;
 				syntaxTree->isArray = ((TreeNode*)symtab->lookup(id))->isArray;
 				syntaxTree->isStatic = ((TreeNode*)symtab->lookup(id))->isStatic;
+				syntaxTree->offset = ((TreeNode*)symtab->lookup(id))->offset;
+				syntaxTree->size = ((TreeNode*)symtab->lookup(id))->size;
 				break;
+			case ExpKind::ConstantK:
+				switch(syntaxTree->type) {
+					case ExpType::String:
+					syntaxTree->offset = goffsetsem;
+					goffsetsem -= strlen(syntaxTree->attr.string);
+					break;
+					case ExpType::Integer: break;
+					default:
+					printf("CJERROR: Fell out of node->type in node->kind.exp\n");
+					break;
+				}
 			default:
 			break;
 		}
 	}
 
-	//DeclK is important for the symbol table
+	//DeclK is important for insertion to the symbol table
 	if (syntaxTree->nodekind == NodeKind::DeclK) {
+
 		if (syntaxTree->kind.decl == DeclKind::FuncK) {
+			//Not sure why this needed to use insert global specifically
+			//Actually wait it might be because functions make a new scope and are always global
 			if (!symtab->insertGlobal(id, (void*)syntaxTree) && syntaxTree->lineno != -1) {
 				//This is the part where an error needs to be thrown if there is a redefinition cjnote
 				printf("SEMANTIC ERROR(%d): Symbol '%s' is already declared at line UNKNOWN.\n", syntaxTree->lineno, id);
 				exit(1);
+			}
+			if (syntaxTree->child[0]) {
+				syntaxTree->offset = 0;
+				TreeNode* sibling = syntaxTree->child[0];
+				while (sibling) {
+					syntaxTree->offset--;
+					sibling->offset = syntaxTree->offset;
+					sibling->codeGenFirstPass = true;
+					sibling = sibling->sibling;
+				}
 			}
 		} else {
 			if (!symtab->insert(id, (void*)syntaxTree) && syntaxTree->lineno != -1) {
@@ -246,8 +273,21 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				printf("SEMANTIC ERROR(%d): Symbol '%s' is already declared at line UNKNOWN.\n", syntaxTree->lineno, id);
 				exit(1);
 			}
+			
 		}
 
+	}
+	
+	if (syntaxTree->nodekind == NodeKind::StmtK) {
+		//If we have parameters
+		if (syntaxTree->child[0]) {
+			traverse(syntaxTree->child[0], symtab);
+			TreeNode* sibling = syntaxTree->child[0];
+			while (sibling) {
+				syntaxTree->offset++;
+				sibling = sibling->sibling;
+			}
+		}
 	}
 
 	traverse(syntaxTree->child[0], symtab);

@@ -45,33 +45,6 @@ void traverseGen(TreeNode* node, SymbolTable* symtab, bool firstPass);
 
 void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 	if (firstPass) {
-		switch (node->kind.decl) {
-			case DeclKind::VarK: {
-				node->offset = 1;
-				if (node->varKind == VarKind::Global || node->isStatic) {
-					if (node->isArray) {
-						//Check for child, initializer
-						traverseGen(node->child[0], symtab, firstPass);
-						node->offset = goffset;
-						goffset -= node->size;
-					}
-				}
-			} break;
-			case DeclKind::FuncK: {
-				//If this function has parameters
-				if (node->child[0]) {
-					//Parms always have offset of one
-					node->offset = 0;
-					TreeNode* sibling = node->child[0];
-					while (sibling) {
-						node->offset--;
-						sibling->offset = node->offset;
-						sibling->codeGenFirstPass = true;
-						sibling = sibling->sibling;
-					}
-				}
-			} break;
-		}
 	} else {
 		switch (node->kind.decl) {
 			//This isn't very good, needs some fixing up
@@ -105,19 +78,6 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 }
 void caseStmtK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 	if (firstPass) {
-		switch (node->kind.stmt) {
-			case StmtKind::CompoundK: {
-				//If we have parameters
-				if (node->child[0]) {
-					traverseGen(node->child[0], symtab, firstPass);
-					TreeNode* sibling = node->child[0];
-					while (sibling) {
-						node->offset++;
-						sibling = sibling->sibling;
-					}
-				}
-			} break;
-		}
 	} else {
 		switch (node->kind.stmt) {
 			case StmtKind::CompoundK:
@@ -140,30 +100,6 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 
 void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 	if (firstPass) {
-		switch (node->kind.exp) {
-			case ExpKind::CallK: {
-				emitComment("CALL", node->attr.name);
-			}
-			break;
-			case ExpKind::AssignK:
-			break;
-			case ExpKind::ConstantK: {
-				switch(node->type) {
-					case ExpType::String:
-					node->offset = goffset;
-					goffset -= strlen(node->attr.string);
-					break;
-					case ExpType::Integer: break;
-					default:
-					printf("CJERROR: Fell out of node->type in node->kind.exp\n");
-					break;
-				}
-			}
-			break;
-			case ExpKind::IdK: {
-				
-			} break;
-		}
 	} else {
 		//Code generation
 
@@ -229,7 +165,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 void traverseGen(TreeNode* node, SymbolTable* symtab, bool firstPass) {
 	if (!node) return;
 
-	if ((firstPass && node->codeGenFirstPass) || node->codeGenSecondPass)
+	if (node->codeGenSecondPass)
 		return;
 
 	switch (node->nodekind) {
