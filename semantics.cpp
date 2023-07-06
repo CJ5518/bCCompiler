@@ -73,6 +73,8 @@ bool shouldChangeScope(TreeNode* node) {
 void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=false) {
 	if (!syntaxTree)
 		return;
+	if (syntaxTree->semanticsDone)
+		return;
 
 	//Used pretty universally, typicall 'the' id in question
 	char* id = strdup(syntaxTree->attr.name);
@@ -257,13 +259,16 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				printf("SEMANTIC ERROR(%d): Symbol '%s' is already declared at line UNKNOWN.\n", syntaxTree->lineno, id);
 				exit(1);
 			}
+
+			//If we have params
 			if (syntaxTree->child[0]) {
 				syntaxTree->offset = 0;
 				TreeNode* sibling = syntaxTree->child[0];
 				while (sibling) {
+					//Params always have size of 1, so offset increases by one each time
 					syntaxTree->offset--;
 					sibling->offset = syntaxTree->offset;
-					sibling->codeGenFirstPass = true;
+					sibling->semanticsDone = true;
 					sibling = sibling->sibling;
 				}
 			}
@@ -289,6 +294,8 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 			}
 		}
 	}
+
+	syntaxTree->semanticsDone = true;
 
 	traverse(syntaxTree->child[0], symtab);
 	traverse(syntaxTree->child[1], symtab, //Handle the function compound special case

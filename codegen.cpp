@@ -41,158 +41,145 @@ int countOffsets(TreeNode* node) {
 }
 
 
-void traverseGen(TreeNode* node, SymbolTable* symtab, bool firstPass);
+void traverseGen(TreeNode* node, SymbolTable* symtab);
 
-void caseDeclK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
-	if (firstPass) {
-	} else {
-		switch (node->kind.decl) {
-			//This isn't very good, needs some fixing up
-			case DeclKind::FuncK:
-				emitComment("");
-				emitLongComment();
-				//goffset--;
-				emitComment("FUNCTION", node->attr.name);
+void caseDeclK(TreeNode* node, SymbolTable* symtab) {
+	switch (node->kind.decl) {
+		//This isn't very good, needs some fixing up
+		case DeclKind::FuncK:
+			emitComment("");
+			emitLongComment();
+			//goffset--;
+			emitComment("FUNCTION", node->attr.name);
 
-				if (strcmp("main", node->attr.name) == 0) {
-					mainIndex = emitWhereAmI();
-				}
+			if (strcmp("main", node->attr.name) == 0) {
+				mainIndex = emitWhereAmI();
+			}
 
-
-				toffset += node->offset;
-				emitComment("TOFF set:", toffset);
-				//Do some other stuff
-				emitRM("ST", 3,-1,1, "Store return address");
-				//traverseGen the funcs other child, either a compound or some other stmt
-				traverseGen(node->child[1], symtab, firstPass);
-				emitStandardClosing();
-				emitComment("END FUNCTION", node->attr.name);
-				toffset -= node->offset;
-				//goffset++;
-				break;
-			case DeclKind::VarK: {
-
-			} break;
-		}
-	}
-}
-void caseStmtK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
-	if (firstPass) {
-	} else {
-		switch (node->kind.stmt) {
-			case StmtKind::CompoundK:
-			//Start a compound
-			emitComment("COMPOUND");
-			toffset -= node->offset;
-			emitComment("TOFF set:", toffset);
-
-			//Do its body
-			emitComment("Compound Body");
-			traverseGen(node->child[1], symtab, firstPass);
 
 			toffset += node->offset;
 			emitComment("TOFF set:", toffset);
-			emitComment("END COMPOUND");
+			//Do some other stuff
+			emitRM("ST", 3,-1,1, "Store return address");
+			//traverseGen the funcs other child, either a compound or some other stmt
+			traverseGen(node->child[1], symtab);
+			emitStandardClosing();
+			emitComment("END FUNCTION", node->attr.name);
+			toffset -= node->offset;
+			//goffset++;
 			break;
+		case DeclKind::VarK: {
+
+		} break;
+	}
+}
+void caseStmtK(TreeNode* node, SymbolTable* symtab) {
+	switch (node->kind.stmt) {
+		case StmtKind::CompoundK:
+		//Start a compound
+		emitComment("COMPOUND");
+		toffset -= node->offset;
+		emitComment("TOFF set:", toffset);
+
+		//Do its body
+		emitComment("Compound Body");
+		traverseGen(node->child[1], symtab);
+
+		toffset += node->offset;
+		emitComment("TOFF set:", toffset);
+		emitComment("END COMPOUND");
+		break;
+	}
+}
+
+void caseExpK(TreeNode* node, SymbolTable* symtab) {
+	//Code generation
+
+	if (shouldPrintExpression)
+		emitComment("EXPRESSION");
+	switch (node->kind.exp) {
+		case ExpKind::CallK: {
+			emitComment("CALL", node->attr.name);
 		}
+		break;
+		case ExpKind::AssignK:
+		break;
+		case ExpKind::ConstantK: {
+			switch (node->type) {
+				case ExpType::String:
+				emitStrLit(node->offset, node->attr.string);
+				break;
+				case ExpType::Integer:
+				emitRM("LDC", 3, node->attr.value, 6, "Load integer constant");
+				break;
+			}
+		} break;
+		case ExpKind::OpK: {
+			
+			//Pre-op
+			switch (node->attr.op) {
+				case '[': {
+					emitRM("LD", 3, node->child[0]->offset, 1,
+					"Load address of base of array", node->child[0]->attr.name);
+				}
+			}
+
+			//Common code (for ops with 2 args)
+
+			bool oldShouldPrint = shouldPrintExpression;
+			shouldPrintExpression = false;
+			traverseGen(node->child[0], symtab);
+			emitRM("ST", 3, toffset, 1, "Push left side");
+			toffDec();
+			traverseGen(node->child[1], symtab);
+			toffInc();
+			emitRM("LD", 4, toffset, 1, "Pop left into ac1");
+
+
+			//Post op
+			switch (node->attr.op) {
+				//Some code in here might be useful for other ops
+				case '+': {
+					emitRO("ADD", 3, 4, 3, "Op +");
+				} break;
+				case '[': {
+					emitRO("SUB", 3,4,3,"compute location from index");
+					emitRM("LD", 3,0,3,"Load array element");
+				}
+			}
+			shouldPrintExpression = oldShouldPrint;
+		}
+		break;
 	}
 }
 
-void caseExpK(TreeNode* node, SymbolTable* symtab, bool firstPass) {
-	if (firstPass) {
-	} else {
-		//Code generation
-
-		if (shouldPrintExpression)
-			emitComment("EXPRESSION");
-		switch (node->kind.exp) {
-			case ExpKind::CallK: {
-				emitComment("CALL", node->attr.name);
-			}
-			break;
-			case ExpKind::AssignK:
-			break;
-			case ExpKind::ConstantK: {
-				switch (node->type) {
-					case ExpType::String:
-					emitStrLit(node->offset, node->attr.string);
-					break;
-					case ExpType::Integer:
-					emitRM("LDC", 3, node->attr.value, 6, "Load integer constant");
-					break;
-				}
-			} break;
-			case ExpKind::OpK: {
-				
-				//Pre-op
-				switch (node->attr.op) {
-					case '[': {
-						emitRM("LD", 3, node->child[0]->offset, 1,
-						"Load address of base of array", node->child[0]->attr.name);
-					}
-				}
-
-				//Common code (for ops with 2 args)
-
-				bool oldShouldPrint = shouldPrintExpression;
-				shouldPrintExpression = false;
-				traverseGen(node->child[0], symtab, firstPass);
-				emitRM("ST", 3, toffset, 1, "Push left side");
-				toffDec();
-				traverseGen(node->child[1], symtab, firstPass);
-				toffInc();
-				emitRM("LD", 4, toffset, 1, "Pop left into ac1");
-
-
-				//Post op
-				switch (node->attr.op) {
-					//Some code in here might be useful for other ops
-					case '+': {
-						emitRO("ADD", 3, 4, 3, "Op +");
-					} break;
-					case '[': {
-						emitRO("SUB", 3,4,3,"compute location from index");
-						emitRM("LD", 3,0,3,"Load array element");
-					}
-				}
-				shouldPrintExpression = oldShouldPrint;
-			}
-			break;
-		} 
-	}
-}
-
-void traverseGen(TreeNode* node, SymbolTable* symtab, bool firstPass) {
+void traverseGen(TreeNode* node, SymbolTable* symtab) {
 	if (!node) return;
 
-	if (node->codeGenSecondPass)
+	if (node->codeGenDone)
 		return;
 
 	switch (node->nodekind) {
 		//DECLARATION KIND
 		case NodeKind::DeclK:
-		caseDeclK(node, symtab, firstPass);
+		caseDeclK(node, symtab);
 		break;
 		//STATEMENT KIND
 		case NodeKind::StmtK:
-		caseStmtK(node, symtab, firstPass);
+		caseStmtK(node, symtab);
 		break;
 		//EXPRESSION KIND
 		case NodeKind::ExpK:
-		caseExpK(node, symtab, firstPass);
+		caseExpK(node, symtab);
 		break;
 	}
 
-	if (firstPass) {
-		node->codeGenFirstPass = true;
-	} else {
-		node->codeGenSecondPass = true;
-	}
+	node->codeGenDone = true;
 
-	traverseGen(node->child[0], symtab, firstPass);
-	traverseGen(node->child[1], symtab, firstPass);
-	traverseGen(node->child[2], symtab, firstPass);
-	traverseGen(node->sibling, symtab, firstPass);
+	traverseGen(node->child[0], symtab);
+	traverseGen(node->child[1], symtab);
+	traverseGen(node->child[2], symtab);
+	traverseGen(node->sibling, symtab);
 }
 
 void doGlobalsAndStatics(TreeNode* node, bool isSiblingOfRoot = true);
@@ -203,8 +190,7 @@ void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* sy
 	for (int q = 0; q < 7; q++) {
 		syntaxTree = syntaxTree->sibling;
 	}
-	traverseGen(syntaxTree, symtab, true);
-	traverseGen(syntaxTree, symtab, false);
+	traverseGen(syntaxTree, symtab);
 	//After the tree is done, write out the final segment
 	backPatchAJumpToHere(0, "Jump to init [backpatch]");
 
