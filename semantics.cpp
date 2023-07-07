@@ -226,6 +226,7 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				break;
 			case ExpKind::IdK:
 			case ExpKind::CallK:
+				//cjnote: this will seg fault if the symbol does not exist
 				syntaxTree->type = ((TreeNode*)symtab->lookup(id))->type;
 				syntaxTree->isArray = ((TreeNode*)symtab->lookup(id))->isArray;
 				syntaxTree->isStatic = ((TreeNode*)symtab->lookup(id))->isStatic;
@@ -267,6 +268,8 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				while (sibling) {
 					//Params always have size of 1, so offset increases by one each time
 					syntaxTree->offset--;
+					//Add it to the symbol table
+					symtab->insert(sibling->attr.name, sibling);
 					sibling->offset = syntaxTree->offset;
 					sibling->semanticsDone = true;
 					sibling = sibling->sibling;
