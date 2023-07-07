@@ -270,7 +270,8 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					syntaxTree->offset--;
 					//Add it to the symbol table
 					symtab->insert(sibling->attr.name, sibling);
-					sibling->offset = syntaxTree->offset;
+					//cjnote: not sure about the offsets here
+					sibling->offset = syntaxTree->offset - 1;
 					sibling->semanticsDone = true;
 					sibling = sibling->sibling;
 				}
