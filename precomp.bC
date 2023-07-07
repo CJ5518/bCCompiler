@@ -8,8 +8,15 @@ char x(char i) {
     
 }
 
+bar(int x[]) {
+
+}
+
 main()
 {
+    int xx[4];
     foo(x(x('a')),x(x(x(x(x('e'))))),x('e'),12+3+4+1-423);
+    
+
 }
 
