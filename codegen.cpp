@@ -147,10 +147,13 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				case '+': {
 					emitRO("ADD", 3, 4, 3, "Op +");
 				} break;
+				case '-':  {
+					emitRO("SUB", 3,4,3,"Op -");
+				} break;
 				case '[': {
 					emitRO("SUB", 3,4,3,"compute location from index");
 					emitRM("LD", 3,0,3,"Load array element");
-				}
+				} break;
 			}
 			shouldPrintExpression = oldShouldPrint;
 		}

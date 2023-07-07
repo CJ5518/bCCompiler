@@ -3,6 +3,7 @@ int foo(int x[],y[]; char a[],b,c) {
     int inA, inB, inC;
     x[inA];
     y[2];
+    1-2+3-1+4;
 }
 
 main()
