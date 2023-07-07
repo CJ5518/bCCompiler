@@ -3,6 +3,7 @@
 #include "parser.tab.h"
 
 int goffsetsem = 0;
+int toffsetsem = 0;
 
 TokenData* makeDummyTokenData(const char* name) {
 	TokenData* data = new TokenData();
@@ -251,8 +252,8 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 
 	//DeclK is important for insertion to the symbol table
 	if (syntaxTree->nodekind == NodeKind::DeclK) {
-
 		if (syntaxTree->kind.decl == DeclKind::FuncK) {
+			toffsetsem = -2;
 			//Not sure why this needed to use insert global specifically
 			//Actually wait it might be because functions make a new scope and are always global
 			if (!symtab->insertGlobal(id, (void*)syntaxTree) && syntaxTree->lineno != -1) {
@@ -274,17 +275,18 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					sibling->offset = syntaxTree->offset - 1;
 					sibling->semanticsDone = true;
 					sibling = sibling->sibling;
+					toffsetsem--;
 				}
 			}
 		} else {
+			syntaxTree->offset = toffsetsem;
+			toffsetsem--;
 			if (!symtab->insert(id, (void*)syntaxTree) && syntaxTree->lineno != -1) {
 				//This is the part where an error needs to be thrown if there is a redefinition cjnote
 				printf("SEMANTIC ERROR(%d): Symbol '%s' is already declared at line UNKNOWN.\n", syntaxTree->lineno, id);
 				exit(1);
 			}
-			
 		}
-
 	}
 	
 	if (syntaxTree->nodekind == NodeKind::StmtK) {

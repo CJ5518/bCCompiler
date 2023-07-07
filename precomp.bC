@@ -1,7 +1,7 @@
 
 int foo(int x[],y[]; char a[],b,c) {
     int inA, inB, inC;
-    x[3];
+    x[inA];
     y[2];
 }
 

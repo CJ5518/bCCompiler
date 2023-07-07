@@ -69,7 +69,6 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 			//goffset++;
 			break;
 		case DeclKind::VarK: {
-
 		} break;
 	}
 }
@@ -114,13 +113,19 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				break;
 			}
 		} break;
+		case ExpKind::IdK: {
+			if (node->isArray) {
+				emitRM("LD", 3, node->offset, 1,
+				"Load address of base of array", node->attr.name);
+			} else {
+				emitRM("LD", 3, node->offset, 1, "Load variable", node->attr.name);
+			}
+		} break;
 		case ExpKind::OpK: {
 			
 			//Pre-op
 			switch (node->attr.op) {
 				case '[': {
-					emitRM("LD", 3, node->child[0]->offset, 1,
-					"Load address of base of array", node->child[0]->attr.name);
 				}
 			}
 
