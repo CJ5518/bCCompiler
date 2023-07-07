@@ -83,5 +83,6 @@ struct TreeNode {
 	int size;                              // used for size of array
 	bool codeGenDone = false;
 	bool semanticsDone = false;
+	int functionAddress = -1;
 };
 #endif

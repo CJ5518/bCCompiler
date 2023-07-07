@@ -1,12 +1,15 @@
 
-int foo(int x[],y[]; char a[],b,c) {
+foo(char a,b,c; int z) {
     int inA, inB, inC;
-    x[inA];
-    y[2];
     1-2+3-1+4;
+}
+
+char x(char i) {
+    
 }
 
 main()
 {
+    foo(x(x('a')),x(x(x(x(x('e'))))),x('e'),12+3+4+1-423);
 }
 

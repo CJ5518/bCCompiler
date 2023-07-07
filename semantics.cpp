@@ -240,7 +240,10 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					syntaxTree->offset = goffsetsem;
 					goffsetsem -= strlen(syntaxTree->attr.string);
 					break;
-					case ExpType::Integer: break;
+					case ExpType::Boolean:
+					case ExpType::Char:
+					case ExpType::Integer:
+					break;
 					default:
 					printf("CJERROR: Fell out of node->type in node->kind.exp\n");
 					break;

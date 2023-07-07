@@ -60,6 +60,7 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 			toffset += node->offset;
 			emitComment("TOFF set:", toffset);
 			//Do some other stuff
+			node->functionAddress = emitWhereAmI();
 			emitRM("ST", 3,-1,1, "Store return address");
 			//traverseGen the funcs other child, either a compound or some other stmt
 			traverseGen(node->child[1], symtab);
@@ -98,7 +99,36 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		emitComment("EXPRESSION");
 	switch (node->kind.exp) {
 		case ExpKind::CallK: {
+			int oldToffset = toffset;
 			emitComment("CALL", node->attr.name);
+			emitRM("ST", 1, toffset, 1, "Store fp in ghost frame for", node->attr.name);
+			//cjnote: not sure why we do 2 here
+			toffDec();
+			toffDec();
+			int parmCount = 1;
+			TreeNode* parm = node->child[0];
+			bool oldShouldPrint = shouldPrintExpression;
+			shouldPrintExpression = false;
+			while (parm) {
+				emitComment("Param", parmCount);
+				parmCount++;
+				traverseGen(parm, symtab);
+				emitRM("ST", 3, toffset, 1, "Push parameter");
+				toffDec();
+				parm = parm->sibling;
+			}
+			shouldPrintExpression = oldShouldPrint;
+
+			emitComment("Param end", node->attr.name);
+			emitRM("LDA", 1, oldToffset, 1, "Ghost frame becomes new active frame");
+			emitRM("LDA", 3,1,7,"Return address in ac");
+			emitRM("JMP", 7, -(emitWhereAmI() - ((TreeNode*)symtab->lookupGlobal(node->attr.name))->functionAddress+1), 7, "CALL", node->attr.name);
+			emitRM("LDA", 3,0,2,"Save the result in ac");
+
+
+			emitComment("Call end", node->attr.name);
+			toffset = oldToffset;
+			emitComment("TOFF set:", toffset);
 		}
 		break;
 		case ExpKind::AssignK:
@@ -110,6 +140,12 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				break;
 				case ExpType::Integer:
 				emitRM("LDC", 3, node->attr.value, 6, "Load integer constant");
+				break;
+				case ExpType::Char:
+				emitRM("LDC", 3, (int)node->attr.cvalue, 6, "Load char constant");
+				break;
+				default:
+				printf("CJERROR: Fell into default case in ExpKind::ConstantK node->type switch\n");
 				break;
 			}
 		} break;
@@ -187,7 +223,7 @@ void traverseGen(TreeNode* node, SymbolTable* symtab) {
 	traverseGen(node->child[0], symtab);
 	traverseGen(node->child[1], symtab);
 	traverseGen(node->child[2], symtab);
-	traverseGen(node->sibling, symtab);
+	//traverseGen(node->sibling, symtab);
 }
 
 void doGlobalsAndStatics(TreeNode* node, bool isSiblingOfRoot = true);
@@ -198,7 +234,11 @@ void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* sy
 	for (int q = 0; q < 7; q++) {
 		syntaxTree = syntaxTree->sibling;
 	}
-	traverseGen(syntaxTree, symtab);
+
+	while (syntaxTree) {
+		traverseGen(syntaxTree, symtab);
+		syntaxTree = syntaxTree->sibling;
+	}
 	//After the tree is done, write out the final segment
 	backPatchAJumpToHere(0, "Jump to init [backpatch]");
 
