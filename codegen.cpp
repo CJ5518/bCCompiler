@@ -147,7 +147,20 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 			emitComment("TOFF set:", toffset);
 		}
 		break;
-		case ExpKind::AssignK:
+		case ExpKind::AssignK: {
+			bool oldShouldPrintExpression = shouldPrintExpression;
+			shouldPrintExpression = false;
+			traverseGen(node->child[1], symtab);
+			if (node->child[0]->isArray) {
+				printf("CJERROR: Haven't done array assignK yet\n");
+			} else {
+				emitRM("ST", 3, node->child[0]->offset, 1, "Store variable", node->child[0]->attr.name);
+				node->child[0]->codeGenDone = true;
+			}
+
+			shouldPrintExpression = oldShouldPrintExpression;
+
+		}
 		break;
 		case ExpKind::ConstantK: {
 			switch (node->type) {
@@ -172,7 +185,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 			} else {
 				emitRM("LD", 3, node->offset, 1, "Load variable", node->attr.name);
 			}
-		} break;
+		} break;\
 		case ExpKind::OpK: {
 			
 			//Pre-op
