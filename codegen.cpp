@@ -70,6 +70,10 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 			//goffset++;
 			break;
 		case DeclKind::VarK: {
+			if (node->isArray) {
+				emitRM("LDC", 3, node->size, 6, "load size of array", node->attr.name);
+				emitRM("ST", 3, node->offset, 1, "save size of array", node->attr.name);
+			}
 		} break;
 	}
 }
@@ -78,14 +82,21 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 		case StmtKind::CompoundK:
 		//Start a compound
 		emitComment("COMPOUND");
-		toffset -= node->offset;
+		toffset += node->offset;
 		emitComment("TOFF set:", toffset);
+
+		//Do var decls
+		TreeNode* sibling = node->child[0];
+		while (sibling) {
+			traverseGen(sibling, symtab);
+			sibling = sibling->sibling;
+		}
 
 		//Do its body
 		emitComment("Compound Body");
 		traverseGen(node->child[1], symtab);
 
-		toffset += node->offset;
+		toffset -= node->offset;
 		emitComment("TOFF set:", toffset);
 		emitComment("END COMPOUND");
 		break;

@@ -293,14 +293,28 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 	}
 	
 	if (syntaxTree->nodekind == NodeKind::StmtK) {
-		//If we have parameters
-		if (syntaxTree->child[0]) {
-			traverse(syntaxTree->child[0], symtab);
-			TreeNode* sibling = syntaxTree->child[0];
-			while (sibling) {
-				syntaxTree->offset++;
-				sibling = sibling->sibling;
+		switch (syntaxTree->kind.stmt) {
+			case StmtKind::CompoundK: {
+				//If we have variables
+				if (syntaxTree->child[0]) {
+					int oldtoffset = toffsetsem;
+					traverse(syntaxTree->child[0], symtab);
+					TreeNode* sibling = syntaxTree->child[0];
+					while (sibling) {
+						syntaxTree->offset--;
+						sibling->offset = oldtoffset;
+						oldtoffset--;
+						if (sibling->isArray) {
+							syntaxTree->offset -= sibling->size;
+							oldtoffset -= sibling->size;
+						}
+
+						sibling = sibling->sibling;
+						traverse(sibling, symtab);
+					}
+				}
 			}
+
 		}
 	}
 
