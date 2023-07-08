@@ -238,7 +238,7 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				switch(syntaxTree->type) {
 					case ExpType::String:
 					syntaxTree->offset = goffsetsem;
-					goffsetsem -= strlen(syntaxTree->attr.string);
+					goffsetsem -= strlen(syntaxTree->attr.string) - 1;
 					break;
 					case ExpType::Boolean:
 					case ExpType::Char:

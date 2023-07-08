@@ -74,6 +74,20 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 			if (node->isArray) {
 				emitRM("LDC", 3, node->size, 6, "load size of array", node->attr.name);
 				emitRM("ST", 3, node->offset, 1, "save size of array", node->attr.name);
+				//If we have a string constant attached
+				if (node->child[0]) {
+					shouldPrintExpression = false;
+					traverseGen(node->child[0], symtab);
+					emitRM("LDA", 3, node->child[0]->offset - 1, 0, "Load address of char array");
+					emitRM("LDA", 4, node->offset - 1, 1, "address of lhs");
+					//cjnote: not sure about this one
+					emitRM("LD", 5, 1, 3, "size of rhs");
+					emitRM("LD", 6, 1, 4, "size of lhs");
+					emitRO("SWP", 5,6,6,"pick smallest size");
+					emitRO("MOV",4,3,5,"array op =");
+
+					shouldPrintExpression = true;
+				}
 			} else {
 				//If this guy has an initializer
 				if (node->child[0]) {
@@ -256,7 +270,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		case ExpKind::ConstantK: {
 			switch (node->type) {
 				case ExpType::String:
-				emitStrLit(node->offset, node->attr.string);
+				emitStrLit(node->offset - 1, node->attr.string);
 				break;
 				case ExpType::Integer:
 				emitRM("LDC", 3, node->attr.value, 6, "Load integer constant");

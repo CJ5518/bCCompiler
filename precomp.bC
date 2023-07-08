@@ -2,11 +2,9 @@
 
 main()
 {
-    bool a:true;
-    bool b:false;
-    int c:1;
-    int d:1;
-    int x:-1;
-    char y:'\n';
+    char s[10]:"strConst";
+    char s2[10]:"strConst24";
+    char s3[10]:"strCon23st";
+    char s4[10]:"s1trCon23st";
 }
 
