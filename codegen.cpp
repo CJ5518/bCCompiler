@@ -150,11 +150,24 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		break;
 		case ExpKind::AssignK: {
 			char* varname = node->child[0]->attr.name;
-			traverseGen(node->child[1], symtab);
-			if (node->child[0]->isArray) {
-				printf("CJERROR: Haven't done array assignK yet\n");
+			if (node->child[0]->attr.op == '[') {
+				TreeNode* opChild = node->child[0];;
+				TreeNode* rightChild = node->child[1];
+				TreeNode* idChild = opChild->child[0];
+				TreeNode* indexChild = opChild->child[1];
+				opChild->codeGenDone = true;
+				idChild->codeGenDone = true;
+				traverseGen(indexChild, symtab);
+				emitRM("ST", 3, toffset, 1, "Push index");
+				toffDec();
+				traverseGen(rightChild, symtab);
+				toffInc();
+				emitRM("LD", 4, toffset, 1, "Pop index");
+				emitRM("LDA", 5, idChild->offset-1, 1, "Load address of base of array", idChild->attr.name);
+				emitRO("SUB",5,5,4,"Compute offset of value");
+				emitRM("ST",3,0,5,"Store variable", idChild->attr.name);
 			} else {
-
+				traverseGen(node->child[1], symtab);
 				if (node->attr.op != '=') {
 					if (node->attr.op == ADDASS || node->attr.op == SUBASS ||
 						node->attr.op == MULASS || node->attr.op == DIVASS) {
@@ -206,7 +219,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		} break;
 		case ExpKind::IdK: {
 			if (node->isArray) {
-				emitRM("LD", 3, node->offset, 1,
+				emitRM("LDA", 3, node->offset-1, 1,
 				"Load address of base of array", node->attr.name);
 			} else {
 				emitRM("LD", 3, node->offset, 1, "Load variable", node->attr.name);
