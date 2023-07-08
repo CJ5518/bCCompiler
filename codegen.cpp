@@ -157,6 +157,8 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				TreeNode* indexChild = opChild->child[1];
 				opChild->codeGenDone = true;
 				idChild->codeGenDone = true;
+
+
 				traverseGen(indexChild, symtab);
 				emitRM("ST", 3, toffset, 1, "Push index");
 				toffDec();
@@ -165,6 +167,35 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				emitRM("LD", 4, toffset, 1, "Pop index");
 				emitRM("LDA", 5, idChild->offset-1, 1, "Load address of base of array", idChild->attr.name);
 				emitRO("SUB",5,5,4,"Compute offset of value");
+
+				if (node->attr.op == ADDASS || node->attr.op == SUBASS ||
+					node->attr.op == MULASS || node->attr.op == DIVASS) {
+					//The assign+op ops load into 4 instead of 3, only change between the two lines
+					emitRM("LD", 4,0,5,"load lhs variable", idChild->attr.name);
+					//Copied from somewhere below
+					switch (node->attr.op) {
+						case ADDASS:
+						emitRO("ADD",3,4,3,"op +=");
+						break;
+						case SUBASS:
+						emitRO("SUB",3,4,3,"op -=");
+						break;
+						case MULASS:
+						emitRO("MUL",3,4,3,"op *=");
+						break;
+						case DIVASS:
+						emitRO("DIV",3,4,3,"op /=");
+						break;
+						case INC:
+						emitRM("LDA", 3, 1, 3, "increment value of", varname);
+						break;
+						case DEC:
+						emitRM("LDA", 3, -1, 3, "decrement value of", varname);
+					}
+				} else {
+					emitRM("LD", 3, node->child[0]->offset, 1, "load lhs variable", varname);
+				}
+
 				emitRM("ST",3,0,5,"Store variable", idChild->attr.name);
 			} else {
 				traverseGen(node->child[1], symtab);
@@ -177,6 +208,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 						emitRM("LD", 3, node->child[0]->offset, 1, "load lhs variable", varname);
 					}
 				}
+				//Copied by something above
 				switch (node->attr.op) {
 					case ADDASS:
 					emitRO("ADD",3,4,3,"op +=");
