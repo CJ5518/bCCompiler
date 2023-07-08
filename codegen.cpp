@@ -102,32 +102,45 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 }
 void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 	switch (node->kind.stmt) {
-		case StmtKind::CompoundK:
-		//Start a compound
-		emitComment("COMPOUND");
-		toffset += node->offset;
-		emitComment("TOFF set:", toffset);
+		case StmtKind::CompoundK: {
+			//Start a compound
+			emitComment("COMPOUND");
+			toffset += node->offset;
+			emitComment("TOFF set:", toffset);
 
-		//Do var decls
-		TreeNode* sibling = node->child[0];
-		while (sibling) {
-			traverseGen(sibling, symtab);
-			sibling = sibling->sibling;
-		}
+			//Do var decls
+			TreeNode* sibling = node->child[0];
+			while (sibling) {
+				traverseGen(sibling, symtab);
+				sibling = sibling->sibling;
+			}
 
-		//Do its body
-		emitComment("Compound Body");
+			//Do its body
+			emitComment("Compound Body");
 
-		sibling = node->child[1];
-		while (sibling) {
-			traverseGen(sibling, symtab);
-			sibling = sibling->sibling;
-		}
+			sibling = node->child[1];
+			while (sibling) {
+				traverseGen(sibling, symtab);
+				sibling = sibling->sibling;
+			}
 
-		toffset -= node->offset;
-		emitComment("TOFF set:", toffset);
-		emitComment("END COMPOUND");
-		break;
+			toffset -= node->offset;
+			emitComment("TOFF set:", toffset);
+			emitComment("END COMPOUND");
+		} break;
+
+		case StmtKind::IfK: {
+			emitComment("IF");
+			shouldPrintExpression = false;
+			traverseGen(node->child[0], symtab);
+			shouldPrintExpression = true;
+			emitComment("THEN");
+			int location = emitWhereAmI();
+			emitSkip(1);
+			traverseGen(node->child[1], symtab);
+			backPatchAJumpToHere("JZR", 3, location, "Jump around the THEN if false [backpatch]");
+			emitComment("END IF");
+		} break;
 	}
 }
 
@@ -323,6 +336,12 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					case '-':
 					emitRO("NEG",3,3,3,"Op unary -");
 					break;
+					case '*':
+					emitRM("LD",3,1,3,"Load array size");
+					break;
+					case '?':
+					emitRO("RND", 3,3,6,"Op ?");
+					break;
 					default:
 					printf("CJERROR: Fell out of a unary op switch in codegen\n");
 					break;
@@ -349,6 +368,9 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					} break;
 					case '*': {
 						emitRO("MUL", 3,4,3,"Op *");
+					} break;
+					case '%': {
+						emitRO("MOD", 3,4,3,"Op %");
 					} break;
 					case '[': {
 						emitRO("SUB", 3,4,3,"compute location from index");

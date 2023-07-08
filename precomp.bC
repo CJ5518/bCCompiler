@@ -2,11 +2,14 @@
 
 main()
 {
-    int a[10];
-    int b[10];
-    //a = b;
-    int x;
-    x = a[1];
-    a = b;
+    bool x;
+    int arr[12];
+    if x then {
+        x;x;x;x;
+    }
+    ?10;
+    *arr;
+    1%1;
+    
 }
 
