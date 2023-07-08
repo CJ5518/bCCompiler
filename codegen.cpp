@@ -1,5 +1,6 @@
 #include "codegen.h"
 #include "emitcode.h"
+#include "parser.tab.h"
 
 void outputHeader(char* srcFile);
 
@@ -148,11 +149,41 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		}
 		break;
 		case ExpKind::AssignK: {
+			char* varname = node->child[0]->attr.name;
 			traverseGen(node->child[1], symtab);
 			if (node->child[0]->isArray) {
 				printf("CJERROR: Haven't done array assignK yet\n");
 			} else {
-				emitRM("ST", 3, node->child[0]->offset, 1, "Store variable", node->child[0]->attr.name);
+
+				if (node->attr.op != '=') {
+					if (node->attr.op == ADDASS || node->attr.op == SUBASS ||
+						node->attr.op == MULASS || node->attr.op == DIVASS) {
+						//The assign+op ops load into 4 instead of 3, only change between the two lines
+						emitRM("LD", 4, node->child[0]->offset, 1, "load lhs variable", varname);
+					} else {
+						emitRM("LD", 3, node->child[0]->offset, 1, "load lhs variable", varname);
+					}
+				}
+				switch (node->attr.op) {
+					case ADDASS:
+					emitRO("ADD",3,4,3,"op +=");
+					break;
+					case SUBASS:
+					emitRO("SUB",3,4,3,"op -=");
+					break;
+					case MULASS:
+					emitRO("MUL",3,4,3,"op *=");
+					break;
+					case DIVASS:
+					emitRO("DIV",3,4,3,"op /=");
+					break;
+					case INC:
+					emitRM("LDA", 3, 1, 3, "increment value of", varname);
+					break;
+					case DEC:
+					emitRM("LDA", 3, -1, 3, "decrement value of", varname);
+				}
+				emitRM("ST", 3, node->child[0]->offset, 1, "Store variable", varname);
 				node->child[0]->codeGenDone = true;
 			}
 		}
