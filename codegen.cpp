@@ -94,7 +94,12 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 
 		//Do its body
 		emitComment("Compound Body");
-		traverseGen(node->child[1], symtab);
+
+		sibling = node->child[1];
+		while (sibling) {
+			traverseGen(sibling, symtab);
+			sibling = sibling->sibling;
+		}
 
 		toffset -= node->offset;
 		emitComment("TOFF set:", toffset);
@@ -196,6 +201,12 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				} break;
 				case '-':  {
 					emitRO("SUB", 3,4,3,"Op -");
+				} break;
+				case '/': {
+					emitRO("DIV", 3,4,3,"Op /");
+				} break;
+				case '*': {
+					emitRO("MUL", 3,4,3,"Op *");
 				} break;
 				case '[': {
 					emitRO("SUB", 3,4,3,"compute location from index");
