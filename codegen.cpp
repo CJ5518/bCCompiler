@@ -111,8 +111,11 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 void caseExpK(TreeNode* node, SymbolTable* symtab) {
 	//Code generation
 
-	if (shouldPrintExpression)
+	bool oldShouldPrint = shouldPrintExpression;
+	if (shouldPrintExpression) {
 		emitComment("EXPRESSION");
+		shouldPrintExpression = false;
+	}
 	switch (node->kind.exp) {
 		case ExpKind::CallK: {
 			int oldToffset = toffset;
@@ -123,8 +126,6 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 			toffDec();
 			int parmCount = 1;
 			TreeNode* parm = node->child[0];
-			bool oldShouldPrint = shouldPrintExpression;
-			shouldPrintExpression = false;
 			while (parm) {
 				emitComment("Param", parmCount);
 				parmCount++;
@@ -133,7 +134,6 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				toffDec();
 				parm = parm->sibling;
 			}
-			shouldPrintExpression = oldShouldPrint;
 
 			emitComment("Param end", node->attr.name);
 			emitRM("LDA", 1, oldToffset, 1, "Ghost frame becomes new active frame");
@@ -148,8 +148,6 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		}
 		break;
 		case ExpKind::AssignK: {
-			bool oldShouldPrintExpression = shouldPrintExpression;
-			shouldPrintExpression = false;
 			traverseGen(node->child[1], symtab);
 			if (node->child[0]->isArray) {
 				printf("CJERROR: Haven't done array assignK yet\n");
@@ -157,9 +155,6 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				emitRM("ST", 3, node->child[0]->offset, 1, "Store variable", node->child[0]->attr.name);
 				node->child[0]->codeGenDone = true;
 			}
-
-			shouldPrintExpression = oldShouldPrintExpression;
-
 		}
 		break;
 		case ExpKind::ConstantK: {
@@ -196,8 +191,6 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 
 			//Common code (for ops with 2 args)
 
-			bool oldShouldPrint = shouldPrintExpression;
-			shouldPrintExpression = false;
 			traverseGen(node->child[0], symtab);
 			emitRM("ST", 3, toffset, 1, "Push left side");
 			toffDec();
@@ -226,10 +219,11 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					emitRM("LD", 3,0,3,"Load array element");
 				} break;
 			}
-			shouldPrintExpression = oldShouldPrint;
 		}
 		break;
 	}
+	shouldPrintExpression = oldShouldPrint;
+
 }
 
 void traverseGen(TreeNode* node, SymbolTable* symtab) {
