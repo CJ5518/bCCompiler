@@ -2,9 +2,11 @@
 
 main()
 {
-    int x[4];
-    int y[12];
-    x[6]++;
-    y[x[1]]--;
+    bool a:true;
+    bool b:false;
+    int c:1;
+    int d:1;
+    int x:-1;
+    char y:'\n';
 }
 

@@ -74,6 +74,14 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 			if (node->isArray) {
 				emitRM("LDC", 3, node->size, 6, "load size of array", node->attr.name);
 				emitRM("ST", 3, node->offset, 1, "save size of array", node->attr.name);
+			} else {
+				//If this guy has an initializer
+				if (node->child[0]) {
+					shouldPrintExpression = false;
+					traverseGen(node->child[0], symtab);
+					emitRM("ST", 3, node->offset, 1, "Store variable", node->attr.name);
+					shouldPrintExpression = true;
+				}
 			}
 		} break;
 	}
@@ -256,6 +264,9 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				case ExpType::Char:
 				emitRM("LDC", 3, (int)node->attr.cvalue, 6, "Load char constant");
 				break;
+				case ExpType::Boolean:
+				emitRM("LDC", 3, node->attr.value, 6, "Load Boolean constant");
+				break;
 				default:
 				printf("CJERROR: Fell into default case in ExpKind::ConstantK node->type switch\n");
 				break;
@@ -277,35 +288,45 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				}
 			}
 
-			//Common code (for ops with 2 args)
-
 			traverseGen(node->child[0], symtab);
-			emitRM("ST", 3, toffset, 1, "Push left side");
-			toffDec();
-			traverseGen(node->child[1], symtab);
-			toffInc();
-			emitRM("LD", 4, toffset, 1, "Pop left into ac1");
+			//If it's a unary op
+			if (!node->child[1]) {
+				switch (node->attr.op) {
+					case '-':
+					emitRO("NEG",3,3,3,"Op unary -");
+					break;
+					default:
+					printf("CJERROR: Fell out of a unary op switch in codegen\n");
+					break;
+				}
+			} else {
+				//Common code (for ops with 2 args)
+				emitRM("ST", 3, toffset, 1, "Push left side");
+				toffDec();
+				traverseGen(node->child[1], symtab);
+				toffInc();
+				emitRM("LD", 4, toffset, 1, "Pop left into ac1");
 
-
-			//Post op
-			switch (node->attr.op) {
-				//Some code in here might be useful for other ops
-				case '+': {
-					emitRO("ADD", 3, 4, 3, "Op +");
-				} break;
-				case '-':  {
-					emitRO("SUB", 3,4,3,"Op -");
-				} break;
-				case '/': {
-					emitRO("DIV", 3,4,3,"Op /");
-				} break;
-				case '*': {
-					emitRO("MUL", 3,4,3,"Op *");
-				} break;
-				case '[': {
-					emitRO("SUB", 3,4,3,"compute location from index");
-					emitRM("LD", 3,0,3,"Load array element");
-				} break;
+				//Post op
+				switch (node->attr.op) {
+					//Some code in here might be useful for other ops
+					case '+': {
+						emitRO("ADD", 3, 4, 3, "Op +");
+					} break;
+					case '-':  {
+						emitRO("SUB", 3,4,3,"Op -");
+					} break;
+					case '/': {
+						emitRO("DIV", 3,4,3,"Op /");
+					} break;
+					case '*': {
+						emitRO("MUL", 3,4,3,"Op *");
+					} break;
+					case '[': {
+						emitRO("SUB", 3,4,3,"compute location from index");
+						emitRM("LD", 3,0,3,"Load array element");
+					} break;
+				}
 			}
 		}
 		break;
