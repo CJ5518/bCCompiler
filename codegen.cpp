@@ -173,6 +173,8 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		//Some repeated code in this case, could be cleaned up but I don't care
 		case ExpKind::AssignK: {
 			char* varname = node->child[0]->attr.name;
+
+			//If we're setting an element in an array to something
 			if (node->child[0]->attr.op == '[') {
 				TreeNode* opChild = node->child[0];;
 				TreeNode* rightChild = node->child[1];
@@ -231,7 +233,19 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				}
 
 				emitRM("ST",3,0,5,"Store variable", idChild->attr.name);
-			} else {
+				//If we're setting an array to an array
+			} else if (node->child[1]->isArray) {
+				TreeNode* left = node->child[1];
+				TreeNode* right = node->child[0];
+				emitRM("LDA", 3, node->child[1]->offset - 1, 1, "Load address of base of array", left->attr.name);
+				emitRM("LDA", 4, left->offset + left->size,1, "address of lhs");
+				emitRM("LD", 5, 1, 3, "size of rhs");
+				emitRM("LD", 6, 1, 4, "size of lhs");
+				emitRO("SWP", 5,6,6,"pick smallest size");
+				emitRO("MOV", 4,3,5,"array op =");
+				left->codeGenDone = true;
+				right->codeGenDone = true;
+			} else { //otherwise, regular vars all around
 				traverseGen(node->child[1], symtab);
 				if (node->attr.op != '=') {
 					if (node->attr.op == ADDASS || node->attr.op == SUBASS ||

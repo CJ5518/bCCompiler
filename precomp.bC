@@ -2,9 +2,11 @@
 
 main()
 {
-    char s[10]:"strConst";
-    char s2[10]:"strConst24";
-    char s3[10]:"strCon23st";
-    char s4[10]:"s1trCon23st";
+    int a[10];
+    int b[10];
+    //a = b;
+    int x;
+    x = a[1];
+    a = b;
 }
 
