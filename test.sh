@@ -9,3 +9,4 @@ fi
 
 ./testDir.sh /y/shared/Engineering/cs-drbc/cs445/testBroad/
 ./testDir.sh /y/shared/Engineering/cs-drbc/cs445/testsUnit/
+./testDir.sh /y/shared/Engineering/cs-drbc/cs445/bC_in_4/

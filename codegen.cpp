@@ -371,10 +371,10 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				emitRM("ST",3,0,5,"Store variable", idChild->attr.name);
 				//If we're setting an array to an array
 			} else if (node->child[1] && node->child[1]->isArray) {
-				TreeNode* left = node->child[1];
-				TreeNode* right = node->child[0];
-				loadIdK(left, symtab, 3);
-				emitRM("LDA", 4, left->offset - left->size,1, "address of lhs");
+				TreeNode* right = node->child[1];
+				TreeNode* left = node->child[0];
+				loadIdK(right, symtab, 3);
+				emitRM("LDA", 4, left->offset-1,1, "address of lhs");
 				emitRM("LD", 5, 1, 3, "size of rhs");
 				emitRM("LD", 6, 1, 4, "size of lhs");
 				emitRO("SWP", 5,6,6,"pick smallest size");
@@ -599,6 +599,11 @@ void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* sy
 		if (syntaxTree->kind.decl == DeclKind::VarK) {
 			if (syntaxTree->varKind != VarKind::Global) {
 				printf("CJERROR: This thingy here on line 550 currently (subject to change) is not as it should be\n");
+			} else {
+				//Global var decl, handle the char array exception
+				if (syntaxTree->child[0]) {
+					traverseGen(syntaxTree->child[0], symtab, true);
+				}
 			}
 		}
 		traverseGen(syntaxTree, symtab);

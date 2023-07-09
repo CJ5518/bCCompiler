@@ -1,6 +1,6 @@
+char b[15]:"here";
+
 main()
 {
-   char a[4]:"acid";
-   char c[3];         // limit the space to transfer strings
-   c = a;
-}   
+     b;
+}
