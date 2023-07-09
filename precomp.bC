@@ -5,6 +5,7 @@ main()
 {
     static int staticArray[200];
     int normalArray[200];
+    int SecondnormalArray[200];
     normalArray;
 }
 

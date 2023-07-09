@@ -76,7 +76,7 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 		case DeclKind::VarK: {
 			if (node->isArray) {
 				emitRM("LDC", 3, node->size, 6, "load size of array", node->attr.name);
-				emitRM("ST", 3, node->offset+1, !(node->varKind == VarKind::Global || node->isStatic), "save size of array", node->attr.name);
+				emitRM("ST", 3, node->offset, !(node->varKind == VarKind::Global || node->isStatic), "save size of array", node->attr.name);
 				//If we have a string constant attached
 				if (node->child[0]) {
 					shouldPrintExpression = false;
@@ -96,7 +96,7 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 				if (node->child[0]) {
 					shouldPrintExpression = false;
 					traverseGen(node->child[0], symtab);
-					emitRM("ST", 3, node->offset, 1, "Store variable", node->attr.name);
+					emitRM("ST", 3, node->offset, !(node->varKind == VarKind::Global || node->isStatic), "Store variable", node->attr.name);
 					shouldPrintExpression = true;
 				}
 			}
@@ -294,7 +294,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				traverseGen(indexChild, symtab);
 
 				if (node->attr.op == INC || node->attr.op == DEC) {
-					emitRM("LDA", 5, idChild->offset, 1, "Load address of base of array", idChild->attr.name);
+					emitRM("LDA", 5, idChild->offset-1, 1, "Load address of base of array", idChild->attr.name);
 					emitRO("SUB",5,5,3,"Compute offset of value");
 					emitRM("LD", 3, node->child[0]->offset, 5, "load lhs variable", idChild->attr.name);
 					if (node->attr.op == INC) {
@@ -308,7 +308,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					traverseGen(rightChild, symtab);
 					toffInc();
 					emitRM("LD", 4, toffset, 1, "Pop index");
-					emitRM("LDA", 5, idChild->offset, 1, "Load address of base of array", idChild->attr.name);
+					emitRM("LDA", 5, idChild->offset-1, 1, "Load address of base of array", idChild->attr.name);
 					emitRO("SUB",5,5,4,"Compute offset of value");
 
 					if (node->attr.op == ADDASS || node->attr.op == SUBASS ||
@@ -345,7 +345,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 			} else if (node->child[1]->isArray) {
 				TreeNode* left = node->child[1];
 				TreeNode* right = node->child[0];
-				emitRM("LDA", 3, node->child[1]->offset, 1, "Load address of base of array", left->attr.name);
+				emitRM("LDA", 3, node->child[1]->offset-1, 1, "Load address of base of array", left->attr.name);
 				emitRM("LDA", 4, left->offset + left->size,1, "address of lhs");
 				emitRM("LD", 5, 1, 3, "size of rhs");
 				emitRM("LD", 6, 1, 4, "size of lhs");
@@ -410,7 +410,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		} break;
 		case ExpKind::IdK: {
 			if (node->isArray) {
-				emitRM("LDA", 3, node->offset, 1,
+				emitRM("LDA", 3, node->offset-1, 1,
 				"Load address of base of array", node->attr.name);
 			} else {
 				emitRM("LD", 3, node->offset, 1, "Load variable", node->attr.name);
@@ -574,6 +574,11 @@ void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* sy
 		TreeNode* node = itr->second;
 		traverseGen(node, symtab, true);
 	}
+	emitComment("END INIT GLOBALS AND STATICS");
+	emitRM("LDA",3,1,7,"Return address in ac");
+	emitRM("JMP", 7, mainIndex - emitWhereAmI() - 1,7,"Jump to main");
+	emitRO("HALT",0,0,0,"DONE!");
+	emitComment("END INIT");
 }
 
 
