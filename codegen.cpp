@@ -410,8 +410,12 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 		} break;
 		case ExpKind::IdK: {
 			if (node->isArray) {
-				emitRM("LDA", 3, node->offset-1, 1,
-				"Load address of base of array", node->attr.name);
+				if (node->varKind == VarKind::Parameter) {
+					emitRM("LD", 3, node->offset, 1, "Load address of base of array", node->attr.name);
+				} else {
+					emitRM("LDA", 3, node->offset-1, 1,
+						"Load address of base of array", node->attr.name);
+				}
 			} else {
 				emitRM("LD", 3, node->offset, 1, "Load variable", node->attr.name);
 			}

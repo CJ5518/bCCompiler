@@ -240,6 +240,7 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				syntaxTree->isStatic = ((TreeNode*)symtab->lookup(id))->isStatic;
 				syntaxTree->offset = ((TreeNode*)symtab->lookup(id))->offset;
 				syntaxTree->size = ((TreeNode*)symtab->lookup(id))->size;
+				syntaxTree->varKind = ((TreeNode*)symtab->lookup(id))->varKind;
 				break;
 			case ExpKind::ConstantK:
 				switch(syntaxTree->type) {

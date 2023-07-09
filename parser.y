@@ -72,6 +72,17 @@ void setGlobal(TreeNode* t) {
 	}
 }
 
+//For use in the root declList only
+void setAsParameter(TreeNode* t) {
+	while (t) {
+		// set t->type and t->isStatic
+		// t = t->sibling;
+		t->varKind = VarKind::Parameter;
+		t = t->sibling;
+	}
+}
+
+
 // the syntax tree goes here
 TreeNode* syntaxTree;
 
@@ -138,7 +149,7 @@ funDecl : typeSpec ID '(' parms ')' stmt {$$ = newDeclNode(DeclKind::FuncK, $1, 
 	| ID '(' parms ')' stmt {$$ = newDeclNode(DeclKind::FuncK, ExpType::Void, $1, $3, $5);}
 	;
 
-parms : parmList {$$ = $1;}
+parms : parmList {$$ = $1; setAsParameter($1);}
 	| /*empty*/ {$$ = NULL;}
 	;
 
