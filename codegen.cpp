@@ -342,6 +342,10 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					case '?':
 					emitRO("RND", 3,3,6,"Op ?");
 					break;
+					case NOT:
+					emitRM("LDC", 4,1,6, "Load 1");
+					emitRO("XOR",3,3,4,"Op XOR to get logical not");
+					break;
 					default:
 					printf("CJERROR: Fell out of a unary op switch in codegen\n");
 					break;
@@ -371,6 +375,30 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					} break;
 					case '%': {
 						emitRO("MOD", 3,4,3,"Op %");
+					} break;
+					case EQ: {
+						emitRO("TEQ",3,4,3,"Op ==");
+					} break;
+					case LEQ: {
+						emitRO("TLE",3,4,3,"Op <=");
+					} break;
+					case GEQ: {
+						emitRO("TGE",3,4,3,"Op >=");
+					} break;
+					case NEQ: {
+						emitRO("TNE",3,4,3,"Op !=");
+					} break;
+					case '<': {
+						emitRO("TLT",3,4,3,"Op <");
+					} break;
+					case '>': {
+						emitRO("TGT",3,4,3,"Op >");
+					} break;
+					case AND: {
+						emitRO("AND",3,4,3,"Op AND");
+					} break;
+					case OR: {
+						emitRO("OR",3,4,3,"Op OR");
 					} break;
 					case '[': {
 						emitRO("SUB", 3,4,3,"compute location from index");
