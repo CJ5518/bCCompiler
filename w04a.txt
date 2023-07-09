@@ -1,0 +1,56 @@
+#DRBC CallK
+
+#DRBC Sibling: 7  Func: x returns type void [mem: Global loc: 0 size: -2] [line: 1]
+#DRBC .   Child: 1  Compound [mem: None loc: 0 size: -2] [line: 1]
+#DRBC Sibling: 8  Func: main returns type void [mem: Global loc: 0 size: -2] [line: 3]
+#DRBC .   Child: 1  Compound [mem: None loc: 0 size: -2] [line: 4]
+#DRBC .   .   Child: 1  Call: x of type void [line: 5]
+
+#DRBC * FUNCTION x    This function is provided without comment
+#DRBC * TOFF set: -3
+#DRBC  39:     ST  3,-1(1)    Store return address 
+#DRBC * COMPOUND
+#DRBC * TOFF set: -3
+#DRBC * Compound Body
+#DRBC * TOFF set: -3
+#DRBC * END COMPOUND
+#DRBC * Add standard closing in case there is no return statement
+#DRBC  40:    LDC  2,0(6)     Set return value to 0 
+#DRBC  41:     LD  3,-1(1)    Load return address 
+#DRBC  42:     LD  1,0(1)     Adjust fp 
+#DRBC  43:    JMP  7,0(3)     Return 
+#DRBC * END FUNCTION x
+#DRBC * 
+#DRBC * ** ** ** ** ** ** ** ** ** ** ** **
+#DRBC * FUNCTION main   Comment printed before every function
+#DRBC * TOFF set: -2    Toffset depends on parameters
+#DRBC  44:     ST  3,-1(1)    Store return address  Standard, same for every function
+#DRBC * COMPOUND        Comes before every compound
+#DRBC * TOFF set: -2    Depends on compounds VarDecls
+#DRBC * Compound Body   Comes before every compound body
+#DRBC * EXPRESSION     Comment printed before every ExpK
+#DRBC * CALL x          Comment printed before every CallK
+#DRBC  45:     ST  1,-2(1)    Store fp in ghost frame for x    The -2 here is the toffset, otherwise same for every call
+#DRBC * TOFF dec: -3          Not sure why we subtract 2 from toffset, but it seems to be standard
+#DRBC * TOFF dec: -4
+#DRBC * Param 1               For every param, (This line and next 3 lines are not printed if there is no parameter)
+#DRBC  46:    LDC  3,1(6)     Load integer constant       Do the child[0] (if it exists)
+#DRBC  47:     ST  3,-4(1)    Push parameter          This is always the same, the -4 is the toffset
+#DRBC * TOFF dec: -5                        Decrease the toffset after every parameter, no matter what
+#DRBC * Param end x                Print this after done going through the SIBLINGS of child[0], none in this example but they follow a simple pattern NOTE: this will ALWAYS be printed even if there are no parameters for the function
+#DRBC  48:    LDA  1,-2(1)    Ghost frame becomes new active frame      After every call, the -2 is the toffset BEFORE the call (which also becomes the current toffset)
+#DRBC  49:    LDA  3,1(7)     Return address in ac          Standard, always the same for every call      
+#DRBC  50:    JMP  7,-12(7)   CALL x                    The -12 here refers to the 50-38, 38 being the start of the function x, which can be found above. This means you need to save where the functions start
+#DRBC  51:    LDA  3,0(2)     Save the result in ac     Standard, always the same for every call
+#DRBC * Call end x   Always printed after a call ends
+#DRBC * TOFF set: -2   Print the toffset after a call ends
+#DRBC * TOFF set: -2   This one is from the end of the compound, which also prints toffset when it ends
+#DRBC * END COMPOUND   Goes after every compound
+
+x(int y){}
+
+main()
+{
+    x(1);
+}
+
