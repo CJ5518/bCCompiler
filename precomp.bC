@@ -1,11 +1,11 @@
+int y[5];
 
 int get(int x[]; int i)
 {
-    x[1];
+        x[1] = 666;
+        return x[i];
 }
 
 main()
 {
-    int x[1];
-    x[1];
 }

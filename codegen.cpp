@@ -107,9 +107,15 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 	switch (node->kind.stmt) {
 		case StmtKind::ReturnK: {
 			emitComment("RETURN");
+			shouldPrintExpression = false;
+			traverseGen(node->child[0], symtab);
+			if (node->child[0]) {
+				emitRM("LDA", 2,0,3, "Copy result to return register");
+			}
 			emitRM("LD", 3,-1,1,"Load return address");
 			emitRM("LD",1,0,1,"Adjust fp");
 			emitRM("JMP",7,0,3,"Return");
+			shouldPrintExpression = true;
 		} break;
 		case StmtKind::CompoundK: {
 			//Start a compound
@@ -289,12 +295,15 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				TreeNode* idChild = opChild->child[0];
 				TreeNode* indexChild = opChild->child[1];
 				opChild->codeGenDone = true;
-				idChild->codeGenDone = true;
 
 				traverseGen(indexChild, symtab);
 
 				if (node->attr.op == INC || node->attr.op == DEC) {
-					emitRM("LDA", 5, idChild->offset-1, 1, "Load address of base of array", idChild->attr.name);
+					if (node->varKind == VarKind::Parameter) {
+						emitRM("LD", 5, idChild->offset, 1, "Load address of base of array", idChild->attr.name);
+					} else {
+						emitRM("LDA", 5, idChild->offset-1, 1, "Load address of base of array", idChild->attr.name);
+					}
 					emitRO("SUB",5,5,3,"Compute offset of value");
 					emitRM("LD", 3, node->child[0]->offset, 5, "load lhs variable", idChild->attr.name);
 					if (node->attr.op == INC) {
@@ -308,7 +317,11 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					traverseGen(rightChild, symtab);
 					toffInc();
 					emitRM("LD", 4, toffset, 1, "Pop index");
-					emitRM("LDA", 5, idChild->offset-1, 1, "Load address of base of array", idChild->attr.name);
+					if (idChild->varKind == VarKind::Parameter) {
+						emitRM("LD", 5, idChild->offset, 1, "Load address of base of array", idChild->attr.name);
+					} else {
+						emitRM("LDA", 5, idChild->offset-1, 1, "Load address of base of array", idChild->attr.name);
+					}
 					emitRO("SUB",5,5,4,"Compute offset of value");
 
 					if (node->attr.op == ADDASS || node->attr.op == SUBASS ||
@@ -336,7 +349,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 							emitRM("LDA", 3, -1, 3, "decrement value of", varname);
 						}
 					} else {
-						emitRM("LD", 3, node->child[0]->offset, 1, "load lhs variable", varname);
+						//emitRM("LD", 3, node->child[0]->offset, 1, "load lhs variable", varname);
 					}
 				}
 
@@ -345,7 +358,11 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 			} else if (node->child[1]->isArray) {
 				TreeNode* left = node->child[1];
 				TreeNode* right = node->child[0];
-				emitRM("LDA", 3, node->child[1]->offset-1, 1, "Load address of base of array", left->attr.name);
+				if (node->varKind == VarKind::Parameter) {
+					emitRM("LD", 5, left->offset, 1, "Load address of base of array", left->attr.name);
+				} else {
+					emitRM("LDA", 5, left->offset-1, 1, "Load address of base of array", left->attr.name);
+				}
 				emitRM("LDA", 4, left->offset + left->size,1, "address of lhs");
 				emitRM("LD", 5, 1, 3, "size of rhs");
 				emitRM("LD", 6, 1, 4, "size of lhs");
