@@ -546,6 +546,11 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 						emitRO("SUB", 3,4,3,"compute location from index");
 						emitRM("LD", 3,0,3,"Load array element");
 					} break;
+					case MIN:
+					case MAX:
+					//Silly thing for compatibility with the real bC
+					printf("ERROR(SYSTEM): unknown operator %d\n", node->attr.op-25);
+					break;
 				}
 			}
 		}
