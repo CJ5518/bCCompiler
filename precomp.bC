@@ -1,23 +1,9 @@
-int y[5];
 
+int get()
+{
+}
 
 main()
 {
-        y[2];
-        //dog = 2;
-        //y[0] = 3;
-        //output(y[0]);
-        //y[1] = y[0];
-        //output(y[1]);
-        //y[2] = y[1]+311;
-        //output(y[2]);
-        //y[dog+dog] = 496;
-        //output(y[4]);
-        //outnl();
-
-        //dog = get(y, 2);
-        //output(dog);
-        //output(get(y, 2));
-        //output(x[1]);
-        //outnl();
+        get();
 }

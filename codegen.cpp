@@ -531,7 +531,7 @@ void traverseGen(TreeNode* node, SymbolTable* symtab, bool doStaticsAndGlobals) 
 		return;
 	
 	//Statics and globals
-	if ((node->isStatic || node->varKind == VarKind::Global) && node->kind.decl == DeclKind::VarK) {
+	if ((node->isStatic || node->varKind == VarKind::Global) && node->nodekind == NodeKind::DeclK && node->kind.decl == DeclKind::VarK) {
 		staticsAndGlobals.insert(std::pair<std::string, TreeNode*>(node->attr.name, node));
 		if (!doStaticsAndGlobals)
 			return;
