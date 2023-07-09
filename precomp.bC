@@ -2,11 +2,10 @@
 
 main()
 {
-output(1);
-inputb();
-outputb(true);
-inputc();
-outputc('c');
-outnl();
+    int x[111];
+    for q = 1 to 2 by 3 do {
+        int yy[12];
+        q;q;q;q;q;
+    }
 }
 

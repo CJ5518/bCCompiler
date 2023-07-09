@@ -209,7 +209,7 @@ void * SymbolTable::lookup(std::string sym)
 
 	if (debugFlg) {
 		printf("DEBUG(SymbolTable): lookup the symbol \"%s\" and ", sym.c_str());
-		if (data) printf("found it in the scope named \"%s\".\n", name.c_str());
+		if (data) printf("found it in the scope named \"%s\"%d is offset.\n", name.c_str(), ((TreeNode*)data)->offset);
 		else printf("did NOT find it!\n");
 	}
 
@@ -236,8 +236,8 @@ void * SymbolTable::lookupGlobal(std::string sym)
 bool SymbolTable::insert(std::string sym, void *ptr)
 {
 	if (debugFlg) {
-		printf("DEBUG(symbolTable): insert in scope \"%s\" the symbol \"%s\"",
-			   (stack.back()->scopeName()).c_str(), sym.c_str());
+		printf("DEBUG(symbolTable): insert in scope \"%s\" the symbol \"%s\"%d is offset btw",
+			   (stack.back()->scopeName()).c_str(), sym.c_str(),((TreeNode*)ptr)->offset);
 		if(ptr==NULL) printf(" WARNING: The inserted pointer is NULL!!");
 		printf("\n");
 	}

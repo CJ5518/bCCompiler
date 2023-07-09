@@ -102,6 +102,12 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 }
 void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 	switch (node->kind.stmt) {
+		case StmtKind::ReturnK: {
+			emitComment("RETURN");
+			emitRM("LD", 3,-1,1,"Load return address");
+			emitRM("LD",1,0,1,"Adjust fp");
+			emitRM("JMP",7,0,3,"Return");
+		} break;
 		case StmtKind::CompoundK: {
 			//Start a compound
 			emitComment("COMPOUND");
@@ -140,6 +146,60 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 			traverseGen(node->child[1], symtab);
 			backPatchAJumpToHere("JZR", 3, location, "Jump around the THEN if false [backpatch]");
 			emitComment("END IF");
+		} break;
+
+		case StmtKind::ForK: {
+			shouldPrintExpression = false;
+			int oldtoffset = toffset;
+			toffset = node->offset;
+			emitComment("TOFF set:", toffset);
+
+			emitComment("FOR");
+			TreeNode* rangeNode = node->child[1];
+
+			traverseGen(rangeNode->child[0], symtab);
+			emitRM("ST", 3,node->child[0]->offset,1,"save starting value in index variable");
+
+			traverseGen(rangeNode->child[1], symtab);
+			emitRM("ST", 3,node->child[0]->offset-1,1,"save stop value");
+
+			//Has the third value
+			if (rangeNode->child[2]) {
+				traverseGen(rangeNode->child[2], symtab);
+			} else {
+				//Use default
+				emitRM("LDC", 3,1,6, "default increment by 1");
+			}
+			emitRM("ST", 3,node->child[0]->offset-2,1,"save step value");
+
+			//Standard stuff
+			int goBackLocation = emitWhereAmI();
+			emitRM("LD",4,node->child[0]->offset,1,"loop index");
+			emitRM("LD",5,node->child[0]->offset-1,1,"stop value");
+			emitRM("LD",3,node->child[0]->offset-2,1,"step value");
+			emitRO("SLT", 3,4,5, "Op <");
+			emitRM("JNZ",3,1,7,"Jump to loop body");
+
+			//Skip one and do the compound
+			emitSkip(1);
+			int otherJmpLocation = emitWhereAmI();
+			shouldPrintExpression = true;
+			traverseGen(node->child[2], symtab);
+			
+			emitComment("Bottom of loop increment and jump");
+			emitRM("LD", 3, node->child[0]->offset, 1, "Load index");
+			emitRM("LD", 5, node->child[0]->offset - 2, 1, "Load step");
+			emitRO("ADD", 3,3,5,"increment");
+			emitRM("ST", 3,node->child[0]->offset,1,"store back to index");
+			emitRM("JMP", 7, goBackLocation - emitWhereAmI()-1, 7,"go to beginning of loop");
+			backPatchAJumpToHere("JMP", 7, otherJmpLocation-1, "Jump past loop [backpatch]");
+
+			emitComment("END LOOP");
+			
+			toffset = oldtoffset;
+		} break;
+		case StmtKind::RangeK: {
+
 		} break;
 	}
 }

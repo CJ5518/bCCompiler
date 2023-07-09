@@ -304,9 +304,9 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				//If we have variables
 				if (syntaxTree->child[0]) {
 					int oldtoffset = toffsetsem;
-					traverse(syntaxTree->child[0], symtab);
 					TreeNode* sibling = syntaxTree->child[0];
 					while (sibling) {
+						traverse(sibling, symtab);
 						syntaxTree->offset--;
 						sibling->offset = oldtoffset;
 						oldtoffset--;
@@ -314,12 +314,20 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 							syntaxTree->offset -= sibling->size;
 							oldtoffset -= sibling->size;
 						}
-
 						sibling = sibling->sibling;
-						traverse(sibling, symtab);
 					}
+					toffsetsem = oldtoffset;
 				}
-			}
+			} break;
+
+			case StmtKind::ForK: {
+				syntaxTree->child[0]->offset = toffsetsem;
+				toffsetsem-=3;
+				syntaxTree->offset = toffsetsem;
+				bool res = symtab->insert(syntaxTree->child[0]->attr.name, (void*)syntaxTree->child[0]);
+				syntaxTree->semanticsDone = true;
+				syntaxTree->child[0]->semanticsDone = true;
+			} break;
 
 		}
 	}
