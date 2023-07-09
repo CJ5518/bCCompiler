@@ -185,10 +185,9 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 
 		case StmtKind::ForK: {
 			shouldPrintExpression = false;
-			int oldtoffset = toffset;
 			toffset = node->offset;
 			emitComment("TOFF set:", toffset);
-
+			int oldtoffset = toffset;
 			emitComment("FOR");
 			TreeNode* rangeNode = node->child[1];
 
