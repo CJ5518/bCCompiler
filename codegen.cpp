@@ -362,7 +362,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 
 				emitRM("ST",3,0,5,"Store variable", idChild->attr.name);
 				//If we're setting an array to an array
-			} else if (node->child[1]->isArray) {
+			} else if (node->child[1] && node->child[1]->isArray) {
 				TreeNode* left = node->child[1];
 				TreeNode* right = node->child[0];
 				loadIdK(left, symtab, 5);
@@ -375,13 +375,16 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				right->codeGenDone = true;
 			} else { //otherwise, regular vars all around
 				traverseGen(node->child[1], symtab);
+				if (!node->child[1]) {
+					
+				}
 				if (node->attr.op != '=') {
 					if (node->attr.op == ADDASS || node->attr.op == SUBASS ||
 						node->attr.op == MULASS || node->attr.op == DIVASS) {
 						//The assign+op ops load into 4 instead of 3, only change between the two lines
-						emitRM("LD", 4, node->child[0]->offset, 1, "load lhs variable", varname);
+						emitRM("LD", 4, node->child[0]->offset, !(node->child[0]->varKind == VarKind::Global || node->child[0]->isStatic), "load lhs variable", varname);
 					} else {
-						emitRM("LD", 3, node->child[0]->offset, 1, "load lhs variable", varname);
+						emitRM("LD", 3, node->child[0]->offset, !(node->child[0]->varKind == VarKind::Global || node->child[0]->isStatic), "load lhs variable", varname);
 					}
 				}
 				//Copied by something above
