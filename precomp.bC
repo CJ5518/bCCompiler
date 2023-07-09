@@ -1,8 +1,9 @@
-int main()
+main()
 {
-     int i;
+      int n;
 
-     while i<10 do {
-          int j;
-     }
+
+          for i=3 to n do {
+          }
+          outnl();
 }

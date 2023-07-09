@@ -169,7 +169,17 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 			int location = emitWhereAmI();
 			emitSkip(1);
 			traverseGen(node->child[1], symtab);
+			//If we have an else statement
+			if (node->child[2]) {
+				emitSkip(1);
+			}
 			backPatchAJumpToHere("JZR", 3, location, "Jump around the THEN if false [backpatch]");
+			if (node->child[2]) {
+				location = emitWhereAmI();
+				emitComment("ELSE");
+				traverseGen(node->child[2], symtab);
+				backPatchAJumpToHere("JMP", 7, location-1, "Jump around the ELSE [backpatch]");
+			}
 			emitComment("END IF");
 		} break;
 
