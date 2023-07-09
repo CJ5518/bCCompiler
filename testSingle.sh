@@ -5,9 +5,9 @@ source ~/.bash_aliases
 
 printf $1
 printf ": "
-if [[ $(diff --text <(realbC -w $1) <(./bC $1)) ]]; then
+if [[ $(diff --text <(realbC $1) <(./bC $1)) ]]; then
 	printf "NO GOOD:\n"
-	diff --text <(realbC -w $1) <(./bC $1)
+	diff --text <(realbC $1) <(./bC $1)
 	printf $1
 	printf "\n"
 	exit 1
