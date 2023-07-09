@@ -9,6 +9,8 @@ void outputHeader(char* srcFile);
 int foffset = -2;
 int toffset = -2;
 int goffset = 0;
+//Where do we break to?
+std::vector<int> breakPosition;
 
 //Flags
 bool shouldPrintExpression = true;
@@ -179,6 +181,7 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 			emitRM("LD",3,node->child[0]->offset-2,1,"step value");
 			emitRO("SLT", 3,4,5, "Op <");
 			emitRM("JNZ",3,1,7,"Jump to loop body");
+			breakPosition.push_back(emitWhereAmI());
 
 			//Skip one and do the compound
 			emitSkip(1);
@@ -195,11 +198,15 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 			backPatchAJumpToHere("JMP", 7, otherJmpLocation-1, "Jump past loop [backpatch]");
 
 			emitComment("END LOOP");
+			breakPosition.pop_back();
 			
 			toffset = oldtoffset;
 		} break;
-		case StmtKind::RangeK: {
+		
 
+		case StmtKind::BreakK: {
+			emitComment("BREAK");
+			emitRM("JMP", 7, breakPosition.back() - emitWhereAmI() - 1, 7, "break");
 		} break;
 	}
 }

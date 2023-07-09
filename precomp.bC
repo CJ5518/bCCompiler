@@ -3,9 +3,13 @@
 main()
 {
     int x[111];
-    for q = 1 to 2 by 3 do {
-        int yy[12];
+    for q = 1 to 3 do {
         q;q;q;q;q;
+        for i = 10 to 30 by 5 do {
+            i;i;i;i;i;
+            break;
+        }
+        break;
     }
 }
 
