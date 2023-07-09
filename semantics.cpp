@@ -324,6 +324,7 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 
 						sibling = sibling->sibling;
 					}
+					traverse(syntaxTree->child[1],symtab);
 					toffsetsem = oldtoffset;
 				} else {
 					syntaxTree->offset = toffsetsem;
