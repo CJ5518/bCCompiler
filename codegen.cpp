@@ -208,6 +208,32 @@ void caseStmtK(TreeNode* node, SymbolTable* symtab) {
 			emitComment("BREAK");
 			emitRM("JMP", 7, breakPosition.back() - emitWhereAmI() - 1, 7, "break");
 		} break;
+
+		case StmtKind::WhileK: {
+			int oldtoffset = toffset;
+			emitComment("WHILE");
+
+			shouldPrintExpression = false;
+			int goBackLocation = emitWhereAmI();
+			traverseGen(node->child[0], symtab);
+			shouldPrintExpression = true;
+			emitRM("JNZ", 3, 1, 7, "Jump to while part");
+			breakPosition.push_back(emitWhereAmI());
+			int otherJmpLocation = emitWhereAmI();
+			
+
+			emitComment("DO");
+			emitSkip(1);
+			traverseGen(node->child[1], symtab);
+
+			
+			emitRM("JMP", 7, goBackLocation - emitWhereAmI() - 1, 7,"go to beginning of loop");
+			backPatchAJumpToHere("JMP", 7, otherJmpLocation, "Jump past loop [backpatch]");
+
+			breakPosition.pop_back();
+			toffset = oldtoffset;
+			emitComment("END WHILE");
+		} break;
 	}
 }
 

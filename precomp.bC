@@ -2,14 +2,18 @@
 
 main()
 {
-    int x[111];
-    for q = 1 to 3 do {
-        q;q;q;q;q;
-        for i = 10 to 30 by 5 do {
-            i;i;i;i;i;
+    int x;
+    int arr1[1222];
+    while x == 1 do {
+        int arr[1222];
+        break;
+        while x == arr[12] * 5 do {
+            int a3rr[1222];
+            {
+                int arr6[1222];
+            }
             break;
         }
-        break;
     }
 }
 

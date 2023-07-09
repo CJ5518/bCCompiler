@@ -329,6 +329,10 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				syntaxTree->child[0]->semanticsDone = true;
 			} break;
 
+			case StmtKind::WhileK: {
+				syntaxTree->offset -= 3;
+			} break;
+
 		}
 	}
 
