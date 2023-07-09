@@ -25,6 +25,7 @@ TreeNode* newIOFunc(const char* name, ExpType ret, ExpType parm=ExpType::Undefin
 
 TreeNode* loadIOLib(TreeNode* syntaxTree) {
 	TreeNode* ioLib = newIOFunc("input", ExpType::Integer);
+	ioLib->functionAddress = 1;
 	//Return the root node, save it here
 	TreeNode* og = ioLib;
 	ioLib->sibling = newIOFunc("output", ExpType::Void, ExpType::Integer);
@@ -323,6 +324,8 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 						sibling = sibling->sibling;
 					}
 					toffsetsem = oldtoffset;
+				} else {
+					syntaxTree->offset = toffsetsem;
 				}
 			} break;
 

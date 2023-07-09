@@ -1,11 +1,11 @@
-int staticVarWithInitializer:4;
-
-
 main()
 {
-    static int staticArray[200];
-    int normalArray[200];
-    int SecondnormalArray[200];
-    normalArray;
+    output(666);
+    outputb(true);
+    outnl();
+    input();
+    inputb();
+
+    return;
 }
 
