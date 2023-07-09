@@ -5,6 +5,15 @@
 #include <string>
 #include "yyerror.h"
 
+int numErrors = 0;
+int numWarnings = 0;
+
+void emitTokenError(int lineNum, char badChar) {
+    printf("TOKEN ERROR(%d): invalid or misplaced input character: \'%c\'. Character Ignored.\n", lineNum, badChar);
+    numErrors++;
+}
+
+
 // // // // // // // // // // // // // // // // // // // // 
 //
 // Error message printing
@@ -150,11 +159,13 @@ static void tinySort(char *base[], int num, int step, bool up)
     }
 }
 
+//This function is a hunk of junk that seg faults on me, there is a return statement at the top of it
 
 // This is the yyerror called by the bison parser for errors.
 // It only does errors and not warnings.   
 void yyerror(const char *msg)
 {
+    return;
     char *space;
     char *strs[100];
     int numstrs;
@@ -172,8 +183,9 @@ void yyerror(const char *msg)
     }
 
     // print components
-    printf("ERROR(%d): Syntax error, unexpected %s", lineNum, strs[3]);
-    if (elaborate(strs[3])) {
+    printf("%s\n",msg);
+    printf("ERROR(%d): Syntax error, unexpected %s\n", lineNum, strs[3]);
+    if (strs[3] && elaborate(strs[3])) {
         if (lastToken[0]=='\'' || lastToken[0]=='"') printf(" %s", lastToken); 
         else printf(" \"%s\"", lastToken);
     }
