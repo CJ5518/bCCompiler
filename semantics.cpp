@@ -287,9 +287,9 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					toffsetsem--;
 				}
 			}
-		} else {
-			syntaxTree->offset = toffsetsem;
-			toffsetsem--;
+		} else { //If we are a variable, parms don't get here
+				syntaxTree->offset = toffsetsem;
+				toffsetsem--;
 			if (!symtab->insert(id, (void*)syntaxTree) && syntaxTree->lineno != -1) {
 				//This is the part where an error needs to be thrown if there is a redefinition cjnote
 				printf("SEMANTIC ERROR(%d): Symbol '%s' is already declared at line UNKNOWN.\n", syntaxTree->lineno, id);
@@ -307,13 +307,8 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					TreeNode* sibling = syntaxTree->child[0];
 					while (sibling) {
 						traverse(sibling, symtab);
-						syntaxTree->offset--;
-						sibling->offset = oldtoffset;
-						oldtoffset--;
-						if (sibling->isArray) {
-							syntaxTree->offset -= sibling->size;
-							oldtoffset -= sibling->size;
-						}
+						syntaxTree->offset = sibling->offset - sibling->size;
+
 						sibling = sibling->sibling;
 					}
 					toffsetsem = oldtoffset;
@@ -357,5 +352,6 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 TreeNode* semanticAnalysis(TreeNode* syntaxTree, bool shareCompoundSpace, bool noDuplicateUndefs, SymbolTable* symtab, int& globalOffset) {
 	syntaxTree = loadIOLib(syntaxTree);
 	traverse(syntaxTree, symtab);
+	symtab->goffset = goffsetsem;
 	return syntaxTree;
 }

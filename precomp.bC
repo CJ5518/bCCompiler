@@ -1,19 +1,10 @@
+int staticVarWithInitializer:4;
 
 
 main()
 {
-    int x;
-    int arr1[1222];
-    while x == 1 do {
-        int arr[1222];
-        break;
-        while x == arr[12] * 5 do {
-            int a3rr[1222];
-            {
-                int arr6[1222];
-            }
-            break;
-        }
-    }
+    static int staticArray[200];
+    int normalArray[200];
+    normalArray;
 }
 
