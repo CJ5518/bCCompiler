@@ -1,9 +1,9 @@
-
-int get()
-{
-}
+int gx, gy;
+bool ga, gb;
 
 main()
 {
-        get();
+    int x;
+    gx = 333;
+    x = 444;
 }

@@ -404,7 +404,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					case DEC:
 					emitRM("LDA", 3, -1, 3, "decrement value of", varname);
 				}
-				emitRM("ST", 3, node->child[0]->offset, 1, "Store variable", varname);
+				emitRM("ST", 3, node->child[0]->offset, !(node->child[0]->varKind == VarKind::Global || node->child[0]->isStatic), "Store variable", varname);
 				node->child[0]->codeGenDone = true;
 			}
 		}
