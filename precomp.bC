@@ -2,22 +2,11 @@
 
 main()
 {
-        bool x;
-        int arr[12];
-        if arr[3] < arr[4] then {
-            x;x;x;x;
-        }
-        ?10;
-        *arr;
-        1%1;
-        true == true;
-        true <= true;
-        true >= true;
-        true != true;
-        true > true;
-        true < true;
-        not true;
-        true and false;
-        true or false;
+output(1);
+inputb();
+outputb(true);
+inputc();
+outputc('c');
+outnl();
 }
 

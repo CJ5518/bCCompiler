@@ -28,16 +28,22 @@ TreeNode* loadIOLib(TreeNode* syntaxTree) {
 	//Return the root node, save it here
 	TreeNode* og = ioLib;
 	ioLib->sibling = newIOFunc("output", ExpType::Void, ExpType::Integer);
+	ioLib->sibling->functionAddress = 6;
 	ioLib = ioLib->sibling;
 	ioLib->sibling = newIOFunc("inputb", ExpType::Boolean);
+	ioLib->sibling->functionAddress = 12;
 	ioLib = ioLib->sibling;
 	ioLib->sibling = newIOFunc("outputb", ExpType::Void, ExpType::Boolean);
+	ioLib->sibling->functionAddress = 17;
 	ioLib = ioLib->sibling;
 	ioLib->sibling = newIOFunc("inputc", ExpType::Char);
+	ioLib->sibling->functionAddress = 23;
 	ioLib = ioLib->sibling;
 	ioLib->sibling = newIOFunc("outputc", ExpType::Void, ExpType::Char);
+	ioLib->sibling->functionAddress = 28;
 	ioLib = ioLib->sibling;
 	ioLib->sibling = newIOFunc("outnl", ExpType::Void);
+	ioLib->sibling->functionAddress = 34;
 	ioLib = ioLib->sibling;
 	//Append the rest of the syntax tree
 	ioLib->sibling = syntaxTree;
