@@ -96,7 +96,6 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 				if (node->child[0]) {
 					shouldPrintExpression = false;
 					traverseGen(node->child[0], symtab);
-					emitRM("LDA", 3, node->child[0]->offset - 1, 0, "Load address of char array");
 					emitRM("LDA", 4, node->offset - 1, 1, "address of lhs");
 					//cjnote: not sure about this one
 					emitRM("LD", 5, 1, 3, "size of rhs");
@@ -374,8 +373,8 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 			} else if (node->child[1] && node->child[1]->isArray) {
 				TreeNode* left = node->child[1];
 				TreeNode* right = node->child[0];
-				loadIdK(left, symtab, 5);
-				emitRM("LDA", 4, left->offset + left->size,1, "address of lhs");
+				loadIdK(left, symtab, 3);
+				emitRM("LDA", 4, left->offset - left->size,1, "address of lhs");
 				emitRM("LD", 5, 1, 3, "size of rhs");
 				emitRM("LD", 6, 1, 4, "size of lhs");
 				emitRO("SWP", 5,6,6,"pick smallest size");
@@ -425,6 +424,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 			switch (node->type) {
 				case ExpType::String:
 				emitStrLit(node->offset - 1, node->attr.string);
+				emitRM("LDA", 3, node->offset - 1, 0, "Load address of char array");
 				break;
 				case ExpType::Integer:
 				emitRM("LDC", 3, node->attr.value, 6, "Load integer constant");
@@ -481,7 +481,20 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 				toffInc();
 				emitRM("LD", 4, toffset, 1, "Pop left into ac1");
 
-				//Post op
+				if (node->child[1]->isArray && node->child[0]->isArray) {
+					//Double array ops, significantly more involved
+					emitRM("LD",5,1,3,"AC2 <- |RHS|");
+					emitRM("LD",6,1,4,"AC3 <- |LHS|");
+					emitRM("LDA",2,0,5,"R2 <- |RHS|");
+					emitRO("SWP",5,6,6,"pick smallest size");
+					emitRM("LD",6,1,4,"AC3 <- |LHS|");
+					emitRO("CO",4,3,5,"setup array compare  LHS vs RHS");
+					emitRO("TNE",5,4,3,"if not equal then test (AC1, AC)");
+					emitRO("JNZ",5,2,7,"jump not equal");
+					emitRM("LDA",3,0,2,"AC1 <- |RHS|");
+					emitRM("LDA",4,0,6,"AC <- |LHS|");
+				}
+				//Post op 
 				switch (node->attr.op) {
 					//Some code in here might be useful for other ops
 					case '+': {

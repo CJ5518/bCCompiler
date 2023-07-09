@@ -1,9 +1,6 @@
 main()
 {
-      int n;
-
-
-          for i=3 to n do {
-          }
-          outnl();
-}
+   char a[4]:"acid";
+   char c[3];         // limit the space to transfer strings
+   c = a;
+}   
