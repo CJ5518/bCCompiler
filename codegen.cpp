@@ -611,7 +611,7 @@ void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* sy
 				printf("CJERROR: This thingy here on line 550 currently (subject to change) is not as it should be\n");
 			} else {
 				//Global var decl, handle the char array exception
-				if (syntaxTree->child[0]) {
+				if (syntaxTree->child[0] && syntaxTree->type == ExpType::Char && syntaxTree->isArray) {
 					traverseGen(syntaxTree, symtab, true, false);
 					syntaxTree->codeGenDone = false;
 					syntaxTree->child[0]->codeGenDone = false;
