@@ -291,6 +291,7 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 			}
 		} else { //If we are a variable, parms don't get here
 				if (syntaxTree->varKind == VarKind::Global || syntaxTree->isStatic) {
+					traverse(syntaxTree->child[0], symtab);
 					syntaxTree->offset = goffsetsem;
 					if (syntaxTree->isArray) {
 						goffsetsem -= syntaxTree->size;

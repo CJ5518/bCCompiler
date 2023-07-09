@@ -45,7 +45,7 @@ int countOffsets(TreeNode* node) {
 }
 
 
-void traverseGen(TreeNode* node, SymbolTable* symtab, bool doStaticsAndGlobals=false);
+void traverseGen(TreeNode* node, SymbolTable* symtab, bool doStaticsAndGlobals=false, bool printArraySize=false);
 
 void loadIdK(TreeNode* node, SymbolTable* symtab, int intoReg=3) {
 	int isntGlobal = !(node->varKind == VarKind::Global || node->isStatic);
@@ -62,7 +62,7 @@ void loadIdK(TreeNode* node, SymbolTable* symtab, int intoReg=3) {
 	node->codeGenDone = true;
 }
 
-void caseDeclK(TreeNode* node, SymbolTable* symtab) {
+void caseDeclK(TreeNode* node, SymbolTable* symtab, bool loadArraySize=false) {
 	switch (node->kind.decl) {
 		//This isn't very good, needs some fixing up
 		case DeclKind::FuncK:
@@ -90,18 +90,24 @@ void caseDeclK(TreeNode* node, SymbolTable* symtab) {
 			break;
 		case DeclKind::VarK: {
 			if (node->isArray) {
-				emitRM("LDC", 3, node->size, 6, "load size of array", node->attr.name);
-				emitRM("ST", 3, node->offset, !(node->varKind == VarKind::Global || node->isStatic), "save size of array", node->attr.name);
+				if (node->varKind != VarKind::Global || loadArraySize) {
+					emitRM("LDC", 3, node->size, 6, "load size of array", node->attr.name);
+					emitRM("ST", 3, node->offset, !(node->varKind == VarKind::Global || node->isStatic), "save size of array", node->attr.name);
+				}
 				//If we have a string constant attached
 				if (node->child[0]) {
 					shouldPrintExpression = false;
 					traverseGen(node->child[0], symtab);
-					emitRM("LDA", 4, node->offset - 1, 1, "address of lhs");
-					//cjnote: not sure about this one
-					emitRM("LD", 5, 1, 3, "size of rhs");
-					emitRM("LD", 6, 1, 4, "size of lhs");
-					emitRO("SWP", 5,6,6,"pick smallest size");
-					emitRO("MOV",4,3,5,"array op =");
+
+					if (!loadArraySize) {
+						emitRM("LDA", 4, node->offset - 1, !(node->varKind == VarKind::Global || node->isStatic), "address of lhs");
+						emitRM("LD", 5, 1, 3, "size of rhs");
+						emitRM("LD", 6, 1, 4, "size of lhs");
+						emitRO("SWP", 5,6,6,"pick smallest size");
+						emitRO("MOV",4,3,5,"array op =");
+					} else {
+						emitRM("ST", 3, node->offset - 1,0,"Store variable", node->attr.name);
+					}
 
 					shouldPrintExpression = true;
 				}
@@ -549,7 +555,7 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 
 }
 
-void traverseGen(TreeNode* node, SymbolTable* symtab, bool doStaticsAndGlobals) {
+void traverseGen(TreeNode* node, SymbolTable* symtab, bool doStaticsAndGlobals, bool printArraySize) {
 	if (!node) return;
 
 	if (node->codeGenDone)
@@ -565,7 +571,7 @@ void traverseGen(TreeNode* node, SymbolTable* symtab, bool doStaticsAndGlobals) 
 	switch (node->nodekind) {
 		//DECLARATION KIND
 		case NodeKind::DeclK:
-		caseDeclK(node, symtab);
+		caseDeclK(node, symtab, printArraySize);
 		break;
 		//STATEMENT KIND
 		case NodeKind::StmtK:
@@ -585,7 +591,6 @@ void traverseGen(TreeNode* node, SymbolTable* symtab, bool doStaticsAndGlobals) 
 	//traverseGen(node->sibling, symtab);
 }
 
-void doGlobalsAndStatics(TreeNode* node, bool isSiblingOfRoot = true);
 
 void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* symtab, int globalOffset, bool linenumFlagIn) {
 	goffset = symtab->goffset;
@@ -602,7 +607,9 @@ void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* sy
 			} else {
 				//Global var decl, handle the char array exception
 				if (syntaxTree->child[0]) {
-					traverseGen(syntaxTree->child[0], symtab, true);
+					traverseGen(syntaxTree, symtab, true, false);
+					syntaxTree->codeGenDone = false;
+					syntaxTree->child[0]->codeGenDone = false;
 				}
 			}
 		}
@@ -618,7 +625,7 @@ void codegen(FILE* codeOut, char* srcFile, TreeNode* syntaxTree, SymbolTable* sy
 	emitComment("INIT GLOBALS AND STATICS");
 	for (auto itr = staticsAndGlobals.begin(); itr != staticsAndGlobals.end(); itr++) {
 		TreeNode* node = itr->second;
-		traverseGen(node, symtab, true);
+		traverseGen(node, symtab, true, true);
 	}
 	emitComment("END INIT GLOBALS AND STATICS");
 	emitRM("LDA",3,1,7,"Return address in ac");
