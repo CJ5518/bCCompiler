@@ -9,8 +9,17 @@ int numErrors = 0;
 int numWarnings = 0;
 
 void emitTokenError(int lineNum, char badChar) {
-    printf("TOKEN ERROR(%d): invalid or misplaced input character: \'%c\'. Character Ignored.\n", lineNum, badChar);
-    numErrors++;
+	printf("TOKEN ERROR(%d): invalid or misplaced input character: \'%c\'. Character Ignored.\n", lineNum, badChar);
+	numErrors++;
+}
+
+void emitUnusedVariableWarning(int lineNum, char* varname, bool isParameter) {
+	if (isParameter) {
+		printf("SEMANTIC WARNING(%d): The parameter \'%s\' seems not to be used.\n", lineNum, varname);
+	} else {
+		printf("SEMANTIC WARNING(%d): The variable \'%s\' seems not to be used.\n", lineNum, varname);
+	}
+	numWarnings++;
 }
 
 
@@ -45,26 +54,26 @@ void emitTokenError(int lineNum, char badChar) {
 // sentinal marker.
 static int split(char *s, char *strs[], char breakchar)
 {
-    int num;
-    
-    strs[0] = s;
-    num = 1;
-    for (char *p = s; *p; p++) {
-        if (*p==breakchar) {
-            strs[num++] = p+1;
-            *p = '\0';
-        }
-    }
-    strs[num] = NULL;
-    
-    return num;
+	int num;
+	
+	strs[0] = s;
+	num = 1;
+	for (char *p = s; *p; p++) {
+		if (*p==breakchar) {
+			strs[num++] = p+1;
+			*p = '\0';
+		}
+	}
+	strs[num] = NULL;
+	
+	return num;
 }
 
 
 // trim off the last character
 static void trim(char *s)
 {
-    s[strlen(s)-1] = '\0';
+	s[strlen(s)-1] = '\0';
 }
 // map from string to char * for storing nice translation of
 // internal names for tokens.  Preserves (char *) used by
@@ -76,56 +85,56 @@ static std::map<std::string , char *> niceTokenNameMap;    // use an ordered map
 //
 void initErrorProcessing() {
 
-    niceTokenNameMap["ADDASS"] = (char *)"\"+=\"";
-    niceTokenNameMap["AND"] = (char *)"\"and\"";
-    niceTokenNameMap["BOOL"] = (char *)"\"bool\"";
-    niceTokenNameMap["BOOLCONST"] = (char *)"Boolean constant";
-    niceTokenNameMap["BREAK"] = (char *)"\"break\"";
-    niceTokenNameMap["BY"] = (char *)"\"by\"";
-    niceTokenNameMap["CHAR"] = (char *)"\"char\"";
-    niceTokenNameMap["CHARCONST"] = (char *)"character constant";
-    niceTokenNameMap["CHSIGN"] = (char *)"-";
-    niceTokenNameMap["DEC"] = (char *)"\"--\"";
-    niceTokenNameMap["DIVASS"] = (char *)"\"/=\"";
-    niceTokenNameMap["DO"] = (char *)"\"do\"";
-    niceTokenNameMap["ELSE"] = (char *)"\"else\"";
-    niceTokenNameMap["EQ"] = (char *)"\"==\"";
-    niceTokenNameMap["FOR"] = (char *)"\"for\"";
-    niceTokenNameMap["GEQ"] = (char *)"\">=\"";
-    niceTokenNameMap["ID"] = (char *)"identifier";
-    niceTokenNameMap["IF"] = (char *)"\"if\"";
-    niceTokenNameMap["INC"] = (char *)"\"++\"";
-    niceTokenNameMap["INT"] = (char *)"\"int\"";
-    niceTokenNameMap["LEQ"] = (char *)"\"<=\"";
-    niceTokenNameMap["MAX"] = (char *)":>:";
-    niceTokenNameMap["MIN"] = (char *)":<:";
-    niceTokenNameMap["MULASS"] = (char *)"\"*=\"";
-    niceTokenNameMap["NEQ"] = (char *)"\"!=\"";
-    niceTokenNameMap["NOT"] = (char *)"\"not\"";
-    niceTokenNameMap["NUMCONST"] = (char *)"numeric constant";
-    niceTokenNameMap["OR"] = (char *)"\"or\"";
-    niceTokenNameMap["RETURN"] = (char *)"\"return\"";
-    niceTokenNameMap["SIZEOF"] = (char *)"\"*\"";
-    niceTokenNameMap["STATIC"] = (char *)"\"static\"";
-    niceTokenNameMap["STRINGCONST"] = (char *)"string constant";
-    niceTokenNameMap["SUBASS"] = (char *)"\"-=\"";
-    niceTokenNameMap["THEN"] = (char *)"\"then\"";
-    niceTokenNameMap["TO"] = (char *)"\"to\"";
-    niceTokenNameMap["WHILE"] = (char *)"\"while\"";
-    niceTokenNameMap["$end"] = (char *)"end of input";
+	niceTokenNameMap["ADDASS"] = (char *)"\"+=\"";
+	niceTokenNameMap["AND"] = (char *)"\"and\"";
+	niceTokenNameMap["BOOL"] = (char *)"\"bool\"";
+	niceTokenNameMap["BOOLCONST"] = (char *)"Boolean constant";
+	niceTokenNameMap["BREAK"] = (char *)"\"break\"";
+	niceTokenNameMap["BY"] = (char *)"\"by\"";
+	niceTokenNameMap["CHAR"] = (char *)"\"char\"";
+	niceTokenNameMap["CHARCONST"] = (char *)"character constant";
+	niceTokenNameMap["CHSIGN"] = (char *)"-";
+	niceTokenNameMap["DEC"] = (char *)"\"--\"";
+	niceTokenNameMap["DIVASS"] = (char *)"\"/=\"";
+	niceTokenNameMap["DO"] = (char *)"\"do\"";
+	niceTokenNameMap["ELSE"] = (char *)"\"else\"";
+	niceTokenNameMap["EQ"] = (char *)"\"==\"";
+	niceTokenNameMap["FOR"] = (char *)"\"for\"";
+	niceTokenNameMap["GEQ"] = (char *)"\">=\"";
+	niceTokenNameMap["ID"] = (char *)"identifier";
+	niceTokenNameMap["IF"] = (char *)"\"if\"";
+	niceTokenNameMap["INC"] = (char *)"\"++\"";
+	niceTokenNameMap["INT"] = (char *)"\"int\"";
+	niceTokenNameMap["LEQ"] = (char *)"\"<=\"";
+	niceTokenNameMap["MAX"] = (char *)":>:";
+	niceTokenNameMap["MIN"] = (char *)":<:";
+	niceTokenNameMap["MULASS"] = (char *)"\"*=\"";
+	niceTokenNameMap["NEQ"] = (char *)"\"!=\"";
+	niceTokenNameMap["NOT"] = (char *)"\"not\"";
+	niceTokenNameMap["NUMCONST"] = (char *)"numeric constant";
+	niceTokenNameMap["OR"] = (char *)"\"or\"";
+	niceTokenNameMap["RETURN"] = (char *)"\"return\"";
+	niceTokenNameMap["SIZEOF"] = (char *)"\"*\"";
+	niceTokenNameMap["STATIC"] = (char *)"\"static\"";
+	niceTokenNameMap["STRINGCONST"] = (char *)"string constant";
+	niceTokenNameMap["SUBASS"] = (char *)"\"-=\"";
+	niceTokenNameMap["THEN"] = (char *)"\"then\"";
+	niceTokenNameMap["TO"] = (char *)"\"to\"";
+	niceTokenNameMap["WHILE"] = (char *)"\"while\"";
+	niceTokenNameMap["$end"] = (char *)"end of input";
 }
 
 
 // looks of pretty printed words for tokens that are
 // not already in single quotes.  It uses the niceTokenNameMap table.
 static char *niceTokenStr(char *tokenName ) {
-    if (tokenName[0] == '\'') return tokenName;
-    if (niceTokenNameMap.find(tokenName) == niceTokenNameMap.end()) {
-        printf("ERROR(SYSTEM): niceTokenStr fails to find string '%s'\n", tokenName); 
-        fflush(stdout);
-        exit(1);
-    }
-    return niceTokenNameMap[tokenName];
+	if (tokenName[0] == '\'') return tokenName;
+	if (niceTokenNameMap.find(tokenName) == niceTokenNameMap.end()) {
+		printf("ERROR(SYSTEM): niceTokenStr fails to find string '%s'\n", tokenName); 
+		fflush(stdout);
+		exit(1);
+	}
+	return niceTokenNameMap[tokenName];
 }
 
 
@@ -134,7 +143,7 @@ static char *niceTokenStr(char *tokenName ) {
 // be already overwritten with a look ahead token.   But probably not.
 static bool elaborate(char *s)
 {
-    return (strstr(s, "constant") || strstr(s, "identifier"));
+	return (strstr(s, "constant") || strstr(s, "identifier"));
 }
 
 
@@ -149,14 +158,14 @@ static bool elaborate(char *s)
 //
 static void tinySort(char *base[], int num, int step, bool up)
 {
-    for (int i=step; i<num; i+=step) {
-        for (int j=0; j<i; j+=step) {
-            if (up ^ (strcmp(base[i], base[j])>0)) {
-                char *tmp;
-                tmp = base[i]; base[i] = base[j]; base[j] = tmp;
-            }
-        }
-    }
+	for (int i=step; i<num; i+=step) {
+		for (int j=0; j<i; j+=step) {
+			if (up ^ (strcmp(base[i], base[j])>0)) {
+				char *tmp;
+				tmp = base[i]; base[i] = base[j]; base[j] = tmp;
+			}
+		}
+	}
 }
 
 //This function is a hunk of junk that seg faults on me, there is a return statement at the top of it
@@ -165,42 +174,42 @@ static void tinySort(char *base[], int num, int step, bool up)
 // It only does errors and not warnings.   
 void yyerror(const char *msg)
 {
-    return;
-    char *space;
-    char *strs[100];
-    int numstrs;
+	return;
+	char *space;
+	char *strs[100];
+	int numstrs;
 
-    // make a copy of msg string
-    space = strdup(msg);
+	// make a copy of msg string
+	space = strdup(msg);
 
-    // split out components
-    numstrs = split(space, strs, ' ');
-    if (numstrs>4) trim(strs[3]);
+	// split out components
+	numstrs = split(space, strs, ' ');
+	if (numstrs>4) trim(strs[3]);
 
-    // translate components
-    for (int i=3; i<numstrs; i+=2) {
-        strs[i] = niceTokenStr(strs[i]);
-    }
+	// translate components
+	for (int i=3; i<numstrs; i+=2) {
+		strs[i] = niceTokenStr(strs[i]);
+	}
 
-    // print components
-    printf("%s\n",msg);
-    printf("ERROR(%d): Syntax error, unexpected %s\n", lineNum, strs[3]);
-    if (strs[3] && elaborate(strs[3])) {
-        if (lastToken[0]=='\'' || lastToken[0]=='"') printf(" %s", lastToken); 
-        else printf(" \"%s\"", lastToken);
-    }
+	// print components
+	printf("%s\n",msg);
+	printf("ERROR(%d): Syntax error, unexpected %s\n", lineNum, strs[3]);
+	if (strs[3] && elaborate(strs[3])) {
+		if (lastToken[0]=='\'' || lastToken[0]=='"') printf(" %s", lastToken); 
+		else printf(" \"%s\"", lastToken);
+	}
 
-    if (numstrs>4) printf(",");
+	if (numstrs>4) printf(",");
 
-    // print sorted list of expected
-    tinySort(strs+5, numstrs-5, 2, true); 
-    for (int i=4; i<numstrs; i++) {
-        printf(" %s", strs[i]);
-    }
-    printf(".\n");
-    fflush(stdout);   // force a dump of the error
+	// print sorted list of expected
+	tinySort(strs+5, numstrs-5, 2, true); 
+	for (int i=4; i<numstrs; i++) {
+		printf(" %s", strs[i]);
+	}
+	printf(".\n");
+	fflush(stdout);   // force a dump of the error
 
-    numErrors++;      // count the number of errors
+	numErrors++;      // count the number of errors
 
-    free(space);
+	free(space);
 }

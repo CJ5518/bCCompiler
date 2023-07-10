@@ -74,8 +74,8 @@ struct TreeNode {
 	bool isStatic;                         // is staticly allocated?
 	bool isArray;                          // is this an array?
 	bool isConst;                          // can be computed at compile time?
-	bool isUsed;                           // is this variable used?
-	bool isAssigned;                       // has the variable been given a value?
+	bool isUsed = false;                           // is this variable used?
+	bool isAssigned = false;                       // has the variable been given a value?
 
 	// extra stuff inferred about the node
 	VarKind varKind;                       // global, local, localStatic, parameter

@@ -1,6 +1,7 @@
 #include "semantics.h"
 #include "treeUtils.h"
 #include "parser.tab.h"
+#include "yyerror.h"
 
 int goffsetsem = 0;
 int toffsetsem = 0;
@@ -49,6 +50,13 @@ TreeNode* loadIOLib(TreeNode* syntaxTree) {
 	//Append the rest of the syntax tree
 	ioLib->sibling = syntaxTree;
 	return og;
+}
+
+void warningsEmitter(std::string, void* voidNode) {
+	TreeNode* node = (TreeNode*)voidNode;
+	if (!node->isUsed && strcmp(node->attr.name, "main") != 0 && node->lineno >= 0) {
+		emitUnusedVariableWarning(node->lineno, node->attr.name, node->varKind == VarKind::Parameter);
+	}
 }
 
 bool shouldChangeScope(TreeNode* node) {
@@ -241,6 +249,7 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				syntaxTree->offset = ((TreeNode*)symtab->lookup(id))->offset;
 				syntaxTree->size = ((TreeNode*)symtab->lookup(id))->size;
 				syntaxTree->varKind = ((TreeNode*)symtab->lookup(id))->varKind;
+				((TreeNode*)symtab->lookup(id))->isUsed = true;
 				break;
 			case ExpKind::ConstantK:
 				switch(syntaxTree->type) {
@@ -361,14 +370,22 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 	traverse(syntaxTree->child[2], symtab);
 
 	if (shouldChangeScope(syntaxTree) && !isFuncSpecialCase) {
+		symtab->applyToAll(warningsEmitter);
 		symtab->leave();
 	}
 	traverse(syntaxTree->sibling, symtab);
 }
 
+
+
 TreeNode* semanticAnalysis(TreeNode* syntaxTree, bool shareCompoundSpace, bool noDuplicateUndefs, SymbolTable* symtab, int& globalOffset) {
 	syntaxTree = loadIOLib(syntaxTree);
 	traverse(syntaxTree, symtab);
 	symtab->goffset = goffsetsem;
+
+
+	//Do warnings/errors
+	symtab->applyToAllGlobal(warningsEmitter);
+
 	return syntaxTree;
 }

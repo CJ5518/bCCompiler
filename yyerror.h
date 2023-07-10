@@ -11,6 +11,7 @@ extern int numErrors;   // number of errors
 extern int numWarnings;
 
 void emitTokenError(int lineNum, char badChar);
+void emitUnusedVariableWarning(int lineNum, char* varname, bool isParameter);
 
 
 //Crap functions don't worry about em
