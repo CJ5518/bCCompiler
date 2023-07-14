@@ -564,9 +564,13 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 						emitRM("LD", 3,0,3,"Load array element");
 					} break;
 					case MIN:
+					//The second 3 is useless, just leaving it like this because convention
+					//reg[3] = min(reg[3], reg[4])
+					emitRO("SWP", 3,4,3,"Op :<:");
+					break;
 					case MAX:
-					//Silly thing for compatibility with the real bC
-					printf("ERROR(SYSTEM): unknown operator %d\n", node->attr.op-25);
+					//reg[3] = max(reg[4], reg[3])
+					emitRO("SWP", 4,3,3,"Op :>:");
 					break;
 				}
 			}

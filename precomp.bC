@@ -1,6 +1,3 @@
 main (){
-   int array[1];
-   //These two output the same code (and do the same thing)
-   array[?*array];
-   ?array;
+   output(3 :>: 4)
 }
