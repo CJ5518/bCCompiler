@@ -1,5 +1,6 @@
 main (){
-   int c:4;
-   c = 4;
-   outnl()c++;
+   int array[1];
+   //These two output the same code (and do the same thing)
+   array[?*array];
+   ?array;
 }

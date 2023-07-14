@@ -468,8 +468,25 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					case '*':
 					emitRM("LD",3,1,3,"Load array size");
 					break;
-					case '?':
-					emitRO("RND", 3,3,6,"Op ?");
+					case '?': {
+						//If we are doing this on an array
+						if (node->child[0]->isArray) {
+							//We basically just emit the same code for this:
+							//array[?*array];
+							emitRM("ST", 3, toffset, 1, "Push left side");
+							toffDec();
+							node->child[0]->codeGenDone = false;
+							traverseGen(node->child[0], symtab);
+							emitRM("LD",3,1,3,"Load array size");
+							emitRO("RND", 3,3,6,"Op ?");
+							toffInc();
+							emitRM("LD", 4, toffset, 1, "Pop left into ac1");
+							emitRO("SUB", 3,4,3,"compute location from index");
+							emitRM("LD", 3,0,3,"Load array element");
+						} else {
+							emitRO("RND", 3,3,6,"Op ?");
+						}
+					}
 					break;
 					case NOT:
 					emitRM("LDC", 4,1,6, "Load 1");
