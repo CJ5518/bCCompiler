@@ -56,6 +56,10 @@ void warningsEmitter(std::string, void* voidNode) {
 	TreeNode* node = (TreeNode*)voidNode;
 	if (!node->isUsed && strcmp(node->attr.name, "main") != 0 && node->lineno >= 0) {
 		emitUnusedVariableWarning(node->lineno, node->attr.name, node->varKind == VarKind::Parameter);
+	} else {
+		if (!node->isAssigned && node->nodekind == NodeKind::DeclK && node->kind.decl == DeclKind::VarK) {
+			emitUninitializedVariableWarning(node->lineno, node->attr.name);
+		}
 	}
 }
 
@@ -112,6 +116,9 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				}
 				switch (syntaxTree->attr.op) {
 					case '=':
+						if (syntaxTree->child[0]->nodekind != NodeKind::ExpK) {
+							((TreeNode*)symtab->lookup(syntaxTree->child[0]->child[0]->attr.name))->isAssigned = true;
+						}
 						//Make sure they are both of the same type, this code has copies, if you edit it please also edit copies
 						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type) {
 							syntaxTree->type = syntaxTree->child[1]->type;
@@ -298,7 +305,10 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					toffsetsem--;
 				}
 			}
-		} else { //If we are a variable, parms don't get here
+		} else { //If we are a variable, parms don't get here (VarK)
+				if (syntaxTree->child[0]) {
+					syntaxTree->isAssigned = true;
+				}
 				if (syntaxTree->varKind == VarKind::Global || syntaxTree->isStatic) {
 					traverse(syntaxTree->child[0], symtab);
 					syntaxTree->offset = goffsetsem;

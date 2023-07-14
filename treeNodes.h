@@ -75,6 +75,7 @@ struct TreeNode {
 	bool isArray;                          // is this an array?
 	bool isConst;                          // can be computed at compile time?
 	bool isUsed = false;                           // is this variable used?
+	int usedWhere = -1;
 	bool isAssigned = false;                       // has the variable been given a value?
 
 	// extra stuff inferred about the node

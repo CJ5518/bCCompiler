@@ -22,6 +22,11 @@ void emitUnusedVariableWarning(int lineNum, char* varname, bool isParameter) {
 	numWarnings++;
 }
 
+void emitUninitializedVariableWarning(int lineNum, char* varname) {
+	printf("SEMANTIC WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", lineNum, varname);
+	numWarnings++;
+}
+
 
 // // // // // // // // // // // // // // // // // // // // 
 //

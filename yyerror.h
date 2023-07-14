@@ -12,6 +12,7 @@ extern int numWarnings;
 
 void emitTokenError(int lineNum, char badChar);
 void emitUnusedVariableWarning(int lineNum, char* varname, bool isParameter);
+void emitUninitializedVariableWarning(int lineNum, char* varname);
 
 
 //Crap functions don't worry about em
