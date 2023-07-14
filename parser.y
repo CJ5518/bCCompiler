@@ -396,7 +396,9 @@ int main(int argc, char **argv) {
 		//symbolTable->debug(true);
 		int globalOffset = 0;
 		syntaxTree = semanticAnalysis(syntaxTree, true, false, symbolTable, globalOffset);
-		codegen(stdout, infileName, syntaxTree, symbolTable, globalOffset, true);
+
+		if (numErrors == 0)
+			codegen(stdout, infileName, syntaxTree, symbolTable, globalOffset, true);
 		//w03
 		//printTree(stdout, syntaxTree, true, false);
 		if(dotAST) {

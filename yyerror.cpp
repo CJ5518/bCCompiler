@@ -23,10 +23,19 @@ void emitUnusedVariableWarning(int lineNum, char* varname, bool isParameter) {
 }
 
 void emitUninitializedVariableWarning(int lineNum, char* varname) {
-	printf("SEMANTIC WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", lineNum, varname);
-	numWarnings++;
+	//printf("SEMANTIC WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", lineNum, varname);
+	//numWarnings++;
 }
 
+void emitUndeclaredVariableError(int lineNum, char* id) {
+	printf("SEMANTIC ERROR(%d): Symbol '%s' is not declared.\n", lineNum, id);
+	numErrors++;
+}
+
+void emitCannotReturnArrayError(int lineNum) {
+	printf("SEMANTIC ERROR(%d): Cannot return an array.\n", lineNum);
+	numErrors++;
+}
 
 // // // // // // // // // // // // // // // // // // // // 
 //

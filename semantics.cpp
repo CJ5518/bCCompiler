@@ -108,10 +108,10 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 		switch (syntaxTree->kind.exp) {
 			case ExpKind::AssignK:
 				//Make sure both children have been traversed first
-				if (syntaxTree->child[0] && syntaxTree->child[0]->type == ExpType::Void) {
+				if (syntaxTree->child[0]) {
 					traverse(syntaxTree->child[0], symtab);
 				}
-				if (syntaxTree->child[1] && syntaxTree->child[1]->type == ExpType::Void) {
+				if (syntaxTree->child[1]) {
 					traverse(syntaxTree->child[1], symtab);
 				}
 				switch (syntaxTree->attr.op) {
@@ -136,8 +136,6 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type && syntaxTree->child[0]->type == ExpType::Integer) {
 							syntaxTree->type = syntaxTree->child[1]->type;
 						} else {
-							printf("SEMANTIC ERROR(%d): '%s' requires operands of same type (also ints).\n",
-							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
 						}
 					break;
 					case INC:
@@ -145,8 +143,6 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 						if (syntaxTree->child[0]->type == ExpType::Integer) {
 							syntaxTree->type = ExpType::Integer;
 						} else {
-							printf("SEMANTIC ERROR(%d): '%s' requires operands of type int.\n",
-							syntaxTree->lineno, tokenToStr(syntaxTree->attr.op));
 						}
 					break;
 				}
@@ -249,14 +245,17 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				break;
 			case ExpKind::IdK:
 			case ExpKind::CallK:
-				//cjnote: this will seg fault if the symbol does not exist
-				syntaxTree->type = ((TreeNode*)symtab->lookup(id))->type;
-				syntaxTree->isArray = ((TreeNode*)symtab->lookup(id))->isArray;
-				syntaxTree->isStatic = ((TreeNode*)symtab->lookup(id))->isStatic;
-				syntaxTree->offset = ((TreeNode*)symtab->lookup(id))->offset;
-				syntaxTree->size = ((TreeNode*)symtab->lookup(id))->size;
-				syntaxTree->varKind = ((TreeNode*)symtab->lookup(id))->varKind;
-				((TreeNode*)symtab->lookup(id))->isUsed = true;
+				if (!symtab->lookup(id)) {
+					emitUndeclaredVariableError(syntaxTree->lineno, id);
+				} else {
+					syntaxTree->type = ((TreeNode*)symtab->lookup(id))->type;
+					syntaxTree->isArray = ((TreeNode*)symtab->lookup(id))->isArray;
+					syntaxTree->isStatic = ((TreeNode*)symtab->lookup(id))->isStatic;
+					syntaxTree->offset = ((TreeNode*)symtab->lookup(id))->offset;
+					syntaxTree->size = ((TreeNode*)symtab->lookup(id))->size;
+					syntaxTree->varKind = ((TreeNode*)symtab->lookup(id))->varKind;
+					((TreeNode*)symtab->lookup(id))->isUsed = true;
+				}
 				break;
 			case ExpKind::ConstantK:
 				switch(syntaxTree->type) {
@@ -362,6 +361,13 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 
 			case StmtKind::WhileK: {
 				syntaxTree->offset -= 3;
+			} break;
+
+			case StmtKind::ReturnK: {
+				traverse(syntaxTree->child[0], symtab);
+				if (syntaxTree->child[0]->isArray) {
+					emitCannotReturnArrayError(syntaxTree->lineno);
+				}
 			} break;
 
 		}
