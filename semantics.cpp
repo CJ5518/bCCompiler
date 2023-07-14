@@ -370,6 +370,13 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 				}
 			} break;
 
+			case StmtKind::IfK: {
+				traverse(syntaxTree->child[0], symtab);
+				if (syntaxTree->child[0]->type != ExpType::Boolean) {
+					emitBooleanInIfError(syntaxTree->lineno, syntaxTree->child[0]->type);
+				}
+			}
+
 		}
 	}
 

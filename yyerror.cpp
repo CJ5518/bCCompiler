@@ -4,9 +4,24 @@
 #include <map>
 #include <string>
 #include "yyerror.h"
+#include "treeNodes.h"
 
 int numErrors = 0;
 int numWarnings = 0;
+
+void printExpType(ExpType type) {
+	switch (type) {
+		case ExpType::Integer:
+		printf("int");
+		break;
+		case ExpType::Char:
+		printf("char");
+		break;
+		defualt:
+		printf("SORRY BUD YOU NEED TO FIX THIS SWITCH yyerror");
+		break;
+	}
+}
 
 void emitTokenError(int lineNum, char badChar) {
 	printf("TOKEN ERROR(%d): invalid or misplaced input character: \'%c\'. Character Ignored.\n", lineNum, badChar);
@@ -34,6 +49,22 @@ void emitUndeclaredVariableError(int lineNum, char* id) {
 
 void emitCannotReturnArrayError(int lineNum) {
 	printf("SEMANTIC ERROR(%d): Cannot return an array.\n", lineNum);
+	numErrors++;
+}
+
+void emitBooleanInIfError(int lineNum, ExpType type) {
+	printf("SEMANTIC ERROR(%d): Expecting Boolean test condition in if statement but got type ", lineNum);
+	printExpType(type);
+	printf(".\n");
+	numErrors++;
+}
+
+void emitEqualsDifferingTypesError(int lineNum, ExpType left, ExpType right) {
+	printf("SEMANTIC ERROR(%d): '=' requires operands of the same type but lhs is type ", lineNum);
+	printExpType(left);
+	printf(" and rhs is type ");
+	printExpType(right);
+	printf(".\n");
 	numErrors++;
 }
 

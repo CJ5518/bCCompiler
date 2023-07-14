@@ -1,6 +1,8 @@
 #ifndef _YYERROR_H_
 #define _YYERROR_H_
 
+#include "treeNodes.h"
+
 // write a nice error message
 #define YYERROR_VERBOSE
 
@@ -16,6 +18,9 @@ void emitUnusedVariableWarning(int lineNum, char* varname, bool isParameter);
 void emitUninitializedVariableWarning(int lineNum, char* varname);
 
 void emitCannotReturnArrayError(int lineNum);
+void emitBooleanInIfError(int lineNum, ExpType type);
+
+void emitEqualsDifferingTypesError(int lineNum, ExpType left, ExpType right);
 
 
 //Crap functions don't worry about em
