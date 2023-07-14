@@ -219,7 +219,6 @@ static void tinySort(char *base[], int num, int step, bool up)
 // It only does errors and not warnings.   
 void yyerror(const char *msg)
 {
-	return;
 	char *space;
 	char *strs[100];
 	int numstrs;
@@ -237,8 +236,8 @@ void yyerror(const char *msg)
 	}
 
 	// print components
-	printf("%s\n",msg);
-	printf("ERROR(%d): Syntax error, unexpected %s\n", lineNum, strs[3]);
+	//printf("%s\n",msg);
+	printf("SYNTAX ERROR(%d): unexpected %s", lineNum, strs[3]);
 	if (strs[3] && elaborate(strs[3])) {
 		if (lastToken[0]=='\'' || lastToken[0]=='"') printf(" %s", lastToken); 
 		else printf(" \"%s\"", lastToken);

@@ -86,6 +86,7 @@ TreeNode* syntaxTree;
 
 
 %}
+%define parse.error verbose
 %union {
 	TokenData* tokenData;
 	TreeNode *tree;
@@ -312,7 +313,6 @@ constant : NUMCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType
 	| CHARCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Char;}
 	| STRINGCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::String; $$->isArray=true;}
 	| BOOLCONST {$$ = newExpNode(ExpKind::ConstantK, $1); $$->type = ExpType::Boolean;}
-	| ERROR    {emitTokenError(yylval.tokenData->linenum, yylval.tokenData->tokenstr[0]);}
 	;
 
 
