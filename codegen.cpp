@@ -492,6 +492,40 @@ void caseExpK(TreeNode* node, SymbolTable* symtab) {
 					emitRM("LDC", 4,1,6, "Load 1");
 					emitRO("XOR",3,3,4,"Op XOR to get logical not");
 					break;
+					case '>':
+					case '<': {
+						/*
+						2 - array size (num)
+						3 - array itself (address)
+						4 - max/min - the var holding the min/max element
+						5 - counter
+						6 - working register
+						*/
+						emitComment("Array minmax loop");
+						emitRM("LD", 2, 1, 3, "Load array size");
+						emitRM("LD", 4, 0, 3, "Load array first element");
+						emitRM("LDC", 5, 0, 7,"Initalize counter to 0");
+						int topOfLoop = emitWhereAmI();
+						emitRO("SUB", 6, 2, 5, "stop value (array size) - counter");
+						emitRO("JNZ", 6, 1, 7, "jump to our loop body");
+						int backpatchLoc = emitWhereAmI();
+						emitSkip(1);
+						emitComment("Array minmax loop body");
+						emitRO("SUB", 6, 3,5,"Compute element location");
+						emitRM("LD", 6,0,6,"Get array element");
+
+						if (node->attr.op == '>') {
+							emitRO("SWP", 6, 4, 7, "reg[4] = max(reg[6], reg[4])");
+						} else {
+							emitRO("SWP", 4,6,7,"reg[4] = min(reg[6], reg[4])");
+						}
+						
+						emitRM("LDA",5,1,5,"Increment counter");
+						emitRM("JMP", 7, topOfLoop - emitWhereAmI()-1, 7, "go back to top of loop");
+						backPatchAJumpToHere("JMP", 7, backpatchLoc, "Jump past loop [backpatch]");
+						emitRM("LDA", 3,0,4,"Put the output into the correct register");
+					}
+					break;
 					default:
 					printf("CJERROR: Fell out of a unary op switch in codegen\n");
 					break;

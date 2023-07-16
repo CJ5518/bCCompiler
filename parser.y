@@ -283,6 +283,8 @@ unaryExp : unaryop unaryExp {$$ = newExpNode(ExpKind::OpK, $1, $2);}
 unaryop : '-' {$$ = $1;}
 	| '*' {$$ = $1;}
 	| '?' {$$ = $1;}
+	| '>' {$$ = $1;}
+	| '<' {$$ = $1;}
 	;
 
 factor : immutable {$$ = $1;}

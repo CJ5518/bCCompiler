@@ -155,13 +155,24 @@ void traverse(TreeNode* syntaxTree, SymbolTable* symtab, bool isFuncSpecialCase=
 					traverse(syntaxTree->child[1], symtab);
 				}
 				switch (syntaxTree->attr.op) {
+					case '<':
+					case '>':
+					//If this is the unary op
+					if (!syntaxTree->child[1]) {
+						if (syntaxTree->child[0]->isArray) {
+							syntaxTree->type = syntaxTree->child[0]->type;
+							break;
+						} else {
+							printf("SEMANTIC ERROR(%d): %c operator must be used on array.", syntaxTree->lineno, syntaxTree->attr.op);
+						}
+					}
+					//Otherwise just fall through to the stuff below
+
 					//NON-UNARY LOGIC BLOCK
 					case EQ:
 					case GEQ:
 					case LEQ:
 					case NEQ:
-					case '<':
-					case '>':
 						if (syntaxTree->child[1]->type == syntaxTree->child[0]->type) {
 							syntaxTree->type = ExpType::Boolean;
 						} else {
